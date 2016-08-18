@@ -1,0 +1,97 @@
+---
+title: "Extract OBIS Occurrences, Calculate Biodiversity Indices and Relate to Satellite Data"
+author: "Ben Best"
+date: "August 18, 2016"
+output: 
+  html_document: 
+    toc: yes
+    toc_float: true
+    code_folding: show
+    self_contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Describe Extent and Spatial Units of Interest
+
+### Hexagons
+
+### Grids
+
+### Sanctuary Polygons
+
+[List of Marine Zones within Florida Keys National Marine Sanctuary](http://floridakeys.noaa.gov/zones/allzones.html)
+
+```{r load libraries, message=F}
+# load libraries
+library(dplyr)
+library(stringr)
+library(rgdal)
+library(rgeos)
+library(DT)
+library(leaflet)
+library(RColorBrewer)
+```
+
+```{r zones}
+# get zones
+z_kmz = 'data/FKNMS_Marine_Zones.kmz'
+z_kml = 'data/FKNMS_Marine_Zones.kml'
+if (!file.exists(z_kml)){
+  download.file('http://floridakeys.noaa.gov/fknms_map/FKNMS_Marine_Zones.kmz', z_kml)  
+  unzip(z_kml, exdir='data')
+  file.rename('data/doc.kml', z_kml)
+  unlink(z_kmz)
+}
+#ogrListLayers(z_kml)
+z = suppressWarnings(readOGR(z_kml, 'Features (Name)', verbose=F))
+
+# describe zones by type
+z_types = c('Sanctuary Preservation Area','Research Only Area','Ecological Reserve')
+z@data = z@data %>%
+  select(name=Name) %>%
+  mutate(
+    name = plyr::revalue(name, c('Western Sambo Ecologival Reserve'='Western Sambo Ecological Reserve')),
+    type = sapply(name, function(x) z_types[which(str_detect(x, z_types))]) %>% unlist()) %>%
+  select(type, name) %>%
+  arrange(type, name)
+
+# show table
+datatable(z@data)
+
+# get convex hull for study area
+ch = gConvexHull(z)
+ch_wkt = writeWKT(ch)
+
+# map zones
+leaflet(z) %>%
+  addProviderTiles('Esri.OceanBasemap') %>%
+  addPolygons(
+    data=ch,
+    color = 'red', fill = F) %>%
+  addPolygons(
+    stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
+    color = ~colorFactor('Spectral', z$type)(type))
+```
+
+## Read in OBIS data
+
+[iobis/robis: R client for the OBIS API](https://github.com/iobis/robis)
+
+```{r obis}
+library(robis) # devtools::install_github("iobis/robis")
+
+# get taxon list for region
+tax = taxa(geometry=ch_wkt) # Retrieved 7156 records of 7156 (100%)
+
+# get occurrences for region # SLOW!
+# occ = occurrence(geometry=ch_wkt) # Retrieved 6000 records of 597707 (1%)
+```
+
+## Calculate Biodiversity Indices
+
+## Relate to Satellite Data
+
+

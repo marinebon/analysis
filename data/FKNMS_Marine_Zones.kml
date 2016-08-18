@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Florida Keys National Marine Sanctuary Marine Zones</name>
+	<open>1</open>
+	<Snippet maxLines="0"></Snippet>
+	<description>This is a polygon layer containing the boundaries of the Sanctuary Preservation Areas, Ecological Reserves and the Research Only Areas in the Florida Keys National Marine Sanctuary.</description>
+	<Schema name="Florida_Keys_National_Marine_Sanctuary_Marine_Zones" id="Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+		<SimpleField type="string" name="Name"><displayName>Name</displayName>
+</SimpleField>
+	</Schema>
+	<StyleMap id="FEATURES">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#FEATURES0</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#FEATURES1</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="FEATURES0">
+		<BalloonStyle>
+			<text><![CDATA[Zone Name = $[Florida_Keys_National_Marine_Sanctuary_Marine_Zones/Name]<br />]]></text>
+		</BalloonStyle>
+		<LineStyle>
+			<color>ff00ffff</color>
+			<width>2</width>
+		</LineStyle>
+		<PolyStyle>
+			<color>7f00ffff</color>
+		</PolyStyle>
+	</Style>
+	<Style id="FEATURES1">
+		<BalloonStyle>
+			<text><![CDATA[Zone Name = $[Florida_Keys_National_Marine_Sanctuary_Marine_Zones/Name]<br />]]></text>
+		</BalloonStyle>
+		<LineStyle>
+			<color>ff00ffff</color>
+			<width>2</width>
+		</LineStyle>
+		<PolyStyle>
+			<color>7f00ffff</color>
+		</PolyStyle>
+	</Style>
+	<Folder>
+		<name>Features (Name)</name>
+		<Placemark>
+			<name>Alligator Reef Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Alligator Reef Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.6140000006655,24.8496666666294,0 -80.6195000000226,24.8538333333726,0 -80.62716666646401,24.8468333335583,0 -80.6225000000296,24.841833333411,0 -80.6140000006655,24.8496666666294,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Carysfort Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Carysfort Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.1999999999133,25.229666666951,0 -80.21299999972651,25.2354999998539,0 -80.2295000003695,25.2040000003128,0 -80.2163333333618,25.20049999901571,0 -80.1999999999133,25.229666666951,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Cheeca Rocks Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Cheeca Rocks Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.6128333337376,24.904166666933,0 -80.6151666677097,24.9070000001107,0 -80.61916666600899,24.903666667064,0 -80.6166666662817,24.9016666670084,0 -80.6128333337376,24.904166666933,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Coffins Patch Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Coffins Patch Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.9588333325277,24.6853333336487,0 -80.9613333339656,24.6911666661014,0 -80.97466666681289,24.6843333330158,0 -80.9721666661695,24.6791666669595,0 -80.9588333325277,24.6853333336487,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Conch Reef Research Only Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Conch Reef Research Only Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.4543333338919,24.9556666671437,0 -80.4570000000962,24.9498333338342,0 -80.45433333327151,24.9471666665445,0 -80.44883333314159,24.9516666671222,0 -80.4543333338919,24.9556666671437,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Conch Reef Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Conch Reef Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.4543333338919,24.9556666671437,0 -80.45783333413431,24.9579999997306,0 -80.46216666633541,24.9493333332515,0 -80.45866666697521,24.9463333327071,0 -80.4543333338919,24.9556666671437,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Davis Reef Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Davis Reef Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.50083333356101,24.9234999996426,0 -80.5045000002962,24.9268333331739,0 -80.5086666660799,24.9223333329498,0 -80.5058333333573,24.9184999996703,0 -80.50083333356101,24.9234999996426,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Eastern Dry Rocks Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Eastern Dry Rocks Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-81.83883333391211,24.462166666557,0 -81.842500000296,24.4653333336081,0 -81.84766666630399,24.4619999998826,0 -81.84666666654201,24.4578333337255,0 -81.83883333391211,24.462166666557,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Eastern Sambo Research Only Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Eastern Sambo Research Only Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-81.65583333389699,24.492499999238,0 -81.6598333336032,24.4973333336727,0 -81.6671666655938,24.4961666674698,0 -81.6659999998147,24.4895000001033,0 -81.65583333389699,24.492499999238,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>French Reef Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">French Reef Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.343833333268,25.0366666663873,0 -80.35450000015349,25.0393333328719,0 -80.3503333336774,25.0301666669388,0 -80.343833333268,25.0366666663873,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Grecian Rocks Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Grecian Rocks Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.30100000088611,25.1111666669733,0 -80.3033333329133,25.1151666657736,0 -80.3073333334669,25.1135000002154,0 -80.3079999992942,25.1070000001173,0 -80.3053333341807,25.1064999996868,0 -80.30100000088611,25.1111666669733,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Hen and Chickens Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Hen and Chickens Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.54383333338571,24.9368333340496,0 -80.5476666665233,24.9396666668065,0 -80.5531666664244,24.9339999998973,0 -80.54916666631711,24.931000000503,0 -80.54383333338571,24.9368333340496,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Key Largo Dry Rocks Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Key Largo Dry Rocks Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.2949999997206,25.1235000005872,0 -80.2984999994913,25.1264999993461,0 -80.30150000075071,25.1235000001246,0 -80.29699999985181,25.1208333327338,0 -80.2949999997206,25.1235000005872,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Looe Key Research Only Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Looe Key Research Only Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-81.3826666664569,24.5663333329948,0 -81.3835000002148,24.5695000005416,0 -81.3946666661017,24.5705000007352,0 -81.3933333326581,24.56399999999911,0 -81.3826666664569,24.5663333329948,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Looe Key Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Looe Key Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-81.39750000079989,24.5449999999394,0 -81.4005000002617,24.5540000007707,0 -81.4135000003365,24.55200000065661,0 -81.41166666624321,24.5419999998494,0 -81.39750000079989,24.5449999999394,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Molasses Reef Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Molasses Reef Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.3639999998162,25.0176666666938,0 -80.37550000026801,25.01666666642661,0 -80.3805000003875,25.01200000004601,0 -80.3783333332822,25.0048333334302,0 -80.3639999998162,25.0176666666938,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Newfound Harbor Key Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Newfound Harbor Key Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-81.3880000006874,24.614166666391,0 -81.389000000227,24.618333332957,0 -81.3976666664971,24.6166666671098,0 -81.39666666730101,24.6123333339336,0 -81.3880000006874,24.614166666391,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Rock Key Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Rock Key Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-81.8525000003265,24.4549999995001,0 -81.8558333331487,24.4580000002688,0 -81.8608333328376,24.4575000002575,0 -81.8599999996493,24.4535000000605,0 -81.8525000003265,24.4549999995001,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Sand Key Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Sand Key Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-81.8715000003257,24.4596666659825,0 -81.88233333286389,24.4601666672643,0 -81.8824999996933,24.4503333333955,0 -81.8720000007752,24.4501666671723,0 -81.8715000003257,24.4596666659825,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Sombrero Key Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Sombrero Key Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-81.10316666655891,24.6250000002321,0 -81.1130000003317,24.631833332622,0 -81.11483333392449,24.6208333335349,0 -81.10316666655891,24.6250000002321,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Tennessee Reef Research Only Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Tennessee Reef Research Only Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.74836666680621,24.7663833331234,0 -80.7511499992661,24.7700333335566,0 -80.7595500003243,24.7649499993716,0 -80.7574666669168,24.7615833327421,0 -80.74836666680621,24.7663833331234,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>The Elbow Sanctuary Preservation Area</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">The Elbow Sanctuary Preservation Area</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-80.25366666744971,25.1491666667732,0 -80.2605000003399,25.1494999990909,0 -80.26783333324541,25.1416666664888,0 -80.2606666675665,25.1363333342025,0 -80.25366666744971,25.1491666667732,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Tortugas Ecological Reserve North</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Tortugas Ecological Reserve North</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-82.96666666623599,24.6499999997424,0 -82.9000000003567,24.7166666664878,0 -82.866666666585,24.7254999999528,0 -82.79999999940139,24.7255000000578,0 -82.8000118526065,24.7633440152507,0 -82.900000000577,24.76666666690941,0 -83.0999999998098,24.7666666670106,0 -83.1000000000098,24.6500000001566,0 -82.96666666623599,24.6499999997424,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Tortugas Ecological Reserve South</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Tortugas Ecological Reserve South</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-83.0833333326693,24.2999999996158,0 -83.08333333348,24.5499999997851,0 -83.15000000079969,24.549999999984,0 -83.1500000001295,24.2999999996691,0 -83.0833333326693,24.2999999996158,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<name>Western Sambo Ecologival Reserve</name>
+			<Snippet maxLines="0"></Snippet>
+			<styleUrl>#FEATURES</styleUrl>
+			<ExtendedData>
+				<SchemaData schemaUrl="#Florida_Keys_National_Marine_Sanctuary_Marine_Zones_schema">
+					<SimpleData name="Name">Western Sambo Ecologival Reserve</SimpleData>
+				</SchemaData>
+			</ExtendedData>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							-81.69833333351831,24.4808333327365,0 -81.6800000002039,24.56166666621,0 -81.718333332386,24.558333333265,0 -81.72833333342091,24.4749999999103,0 -81.69833333351831,24.4808333327365,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+	</Folder>
+</Document>
+</kml>
