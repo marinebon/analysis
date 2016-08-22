@@ -42,7 +42,7 @@ z_kml = 'data/FKNMS_Marine_Zones.kml'
 if (!file.exists(z_kml)){
   download.file('http://floridakeys.noaa.gov/fknms_map/FKNMS_Marine_Zones.kmz', z_kml)  
   unzip(z_kml, exdir='data')
-  file.rename('data/doc.kml', z_kml)
+  file.rename('data/doc.kml', z_kml) # 20 KB
   unlink(z_kmz)
 }
 #ogrListLayers(z_kml)
@@ -70,7 +70,7 @@ leaflet(z) %>%
   addProviderTiles('Esri.OceanBasemap') %>%
   addPolygons(
     data=ch,
-    color = 'red', fill = F) %>%
+    color = 'red', fill = F) %>% # TODO: add HTML popup w/ name
   addPolygons(
     stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
     color = ~colorFactor('Spectral', z$type)(type))
@@ -83,11 +83,31 @@ leaflet(z) %>%
 ```{r obis}
 library(robis) # devtools::install_github("iobis/robis")
 
+occ_csv = 'data/occ.csv'
+
 # get taxon list for region
 tax = taxa(geometry=ch_wkt) # Retrieved 7156 records of 7156 (100%)
 
 # get occurrences for region # SLOW!
-# occ = occurrence(geometry=ch_wkt) # Retrieved 6000 records of 597707 (1%)
+if (!file.exists(occ_csv)){
+  occurrence(geometry=ch_wkt)  %>% # Retrieved 6000 records of 597707 (1%)
+    write_csv(occ_csv)             # 361 MB
+}
+
+#occ = read_csv(occ_csv)
+# probs = problems(read_csv(occ_csv))
+# probs %>% 
+#   group_by(col) %>%
+#   summarise(
+#     n = n(),
+#     expected = paste(unique(expected), collapse=', '),
+#     row_first_last = paste(first(row), last(row), sep=', '))
+
+#            col     n                           expected row_first_last
+#          <chr> <int>                              <chr>          <chr>
+# 1     modified     1                         date like  213523, 213523
+# 2 occurrenceID   875 an integer, no trailing characters   2398, 597707
+occ = read_csv(occ_csv, col_types)
 ```
 
 ## Calculate Biodiversity Indices
