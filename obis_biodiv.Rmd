@@ -6,7 +6,7 @@ output:
   html_document: 
     toc: yes
     toc_float: true
-    code_folding: show
+    code_folding: hide
     self_contained: true
 ---
 
@@ -18,7 +18,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Hexagons
 
+TODO
+
 ### Grids
+
+TODO
 
 ### Sanctuary Polygons
 
@@ -26,12 +30,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r load libraries, message=F}
 # load libraries
+library(readr)
 library(dplyr)
+library(tidyr)
 library(stringr)
+library(sp)
 library(rgdal)
 library(rgeos)
 library(DT)
 library(leaflet)
+library(htmltools)
 library(RColorBrewer)
 ```
 
@@ -73,28 +81,42 @@ leaflet(z) %>%
     color = 'red', fill = F) %>% # TODO: add HTML popup w/ name
   addPolygons(
     stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
+    popup = ~sprintf('<strong>%s</strong> <br> %s', name, type),
     color = ~colorFactor('Spectral', z$type)(type))
 ```
 
 ## Read in OBIS data
 
-[iobis/robis: R client for the OBIS API](https://github.com/iobis/robis)
+- [iobis/robis: R client for the OBIS API](https://github.com/iobis/robis)
 
-```{r obis}
+```{r obis fetch, eval=T}
 library(robis) # devtools::install_github("iobis/robis")
 
 occ_csv = 'data/occ.csv'
 
-# get taxon list for region
-tax = taxa(geometry=ch_wkt) # Retrieved 7156 records of 7156 (100%)
-
 # get occurrences for region # SLOW!
 if (!file.exists(occ_csv)){
+  # get taxon list for region
+  tax = taxa(geometry=ch_wkt) # Retrieved 7156 records of 7156 (100%)
+
+  # get occurrences for regions
   occurrence(geometry=ch_wkt)  %>% # Retrieved 6000 records of 597707 (1%)
     write_csv(occ_csv)             # 361 MB
 }
+```
 
+```{r obis clean, eval=T}
 #occ = read_csv(occ_csv)
+# Warning: 876 parsing failures.
+#  row          col   expected                                                   actual
+# 2398 occurrenceID an integer urn:catalog:Pangaea:doi:10.1594/PANGAEA.646253:9840658_2
+# 2399 occurrenceID an integer urn:catalog:Pangaea:doi:10.1594/PANGAEA.646253:9840658_1
+# 2772 occurrenceID an integer URI:catalog:ROM:Ichthyology:25048                       
+# 3237 occurrenceID an integer diveboard:3161_0_32750                                  
+# 3238 occurrenceID an integer diveboard:117859_995079_0                               
+# .... ............ .......... ........................................................
+# See problems(...) for more details.
+
 # probs = problems(read_csv(occ_csv))
 # probs %>% 
 #   group_by(col) %>%
@@ -107,11 +129,131 @@ if (!file.exists(occ_csv)){
 #          <chr> <int>                              <chr>          <chr>
 # 1     modified     1                         date like  213523, 213523
 # 2 occurrenceID   875 an integer, no trailing characters   2398, 597707
-occ = read_csv(occ_csv, col_types)
+
+occ = read_csv(
+  occ_csv, 
+  col_types = cols(
+    occurrenceID = col_character())) %>%
+  mutate(
+    occurrenceID_int = as.integer(occurrenceID))
+# Warning: 1 parsing failure.
+#    row      col   expected     actual
+# 213523 modified date like  13/03/2001
+occ[213523,'date'] = as.Date('13/03/2001', '%d/%m/%Y')
+
+# convert to spatial points
+occ_pts = SpatialPointsDataFrame(
+  coords=select(occ, decimalLongitude, decimalLatitude), data=occ, 
+  proj4string=CRS(proj4string(z)))
+```
+
+```{r obis filter spatial - points in polygons, message=F}
+# get poly data per point
+pts_ply = over(occ_pts, z) %>%
+  add_rownames() %>%
+  select(
+    rowname,
+    ply_type = type,
+    ply_name = name)
+
+# join poly data to points
+occ_pts@data = occ_pts@data %>%
+  add_rownames() %>%
+  left_join(pts_ply, by='rowname')
+
+# subset points having a poly
+occ_pts = subset(occ_pts, !is.na(ply_name))
+```
+
+```{r obis filter taxanomic - , message=F}
+# tally observations resolved to species level
+table(!is.na(occ_pts@data$species))
+
+# filter to species
+occ_pts_spp = subset(occ_pts, !is.na(species))
+
+# TODO: perform on higher level taxa groupings
 ```
 
 ## Calculate Biodiversity Indices
 
+- [diversity-vegan.pdf](https://cran.r-project.org/web/packages/vegan/vignettes/diversity-vegan.pdf)
+
+Shannon-Weaver equation:
+
+$$
+H = − \sum_{i=1}^{S} p_i log_b p_i
+$$
+
+Shannon-Weaver terms:
+
+- $p_i$: proportional abundance of species $i$ 
+- $b$: base of the logarithm
+
+```{r calculate diversity per polygon, message=F}
+library(vegan)
+
+# reshape to species names as columns and rows as polygon "sites"
+# similar to BCI in diversity-vegan.pdf
+
+#table(occ_pts_spp@data$individualCount, useNA='always')
+
+# summarize count of species by site
+ply_spp = occ_pts_spp@data %>%
+  mutate(
+    # presume 1 individual if NA
+    individualCount = ifelse(is.na(individualCount), 1, individualCount),
+    scientificName = str_replace_all(scientificName, ' ', '.')) %>%
+  # get count of individuals per species and polygon
+  group_by(ply_name, scientificName) %>%
+  summarize(
+    cnt = sum(individualCount)) %>%
+  # #filter(ply_name == 'Looe Key Research Only Area') # Gramma loreto     1
+  # # get count of species per polygon
+  # group_by(ply_name) %>%
+  # summarize(
+  #   cnt_spp = sum(cnt!=0)) %>%
+  # 
+  spread(scientificName, cnt, fill=0) %>%
+  as.data.frame()
+
+# TODO: deal with scientificName: synonyms, parentheticals, subspp, etc
+
+ply_div = diversity(ply_spp %>% select(-ply_name), index = 'shannon', base = exp(1))
+
+ply_div = ply_spp %>%
+  select(name = ply_name) %>%
+  mutate(
+    div_shannon = ply_div)
+
+datatable(ply_div)
+```
+
+
+```{r}
+z@data = z@data %>%
+  left_join(
+    ply_div,
+    by = 'name')
+
+pal = colorQuantile('Spectral', z$div_shannon, n = 7)
+
+# map zones
+leaflet(z) %>%
+  addProviderTiles('Esri.OceanBasemap') %>%
+  # addPolygons(
+  #   data=ch,
+  #   color = 'red', fill = F) %>% # TODO: add HTML popup w/ name
+  addPolygons(
+    stroke = FALSE, fillOpacity = 0.9, smoothFactor = 0.5,
+    popup = ~sprintf('<strong>%s</strong> <br> %s', name, type),
+    #color = ~colorFactor('Spectral', z$type)(type)
+    color = ~pal(div_shannon)) %>%
+  addLegend("bottomright", pal = pal, values = ~div_shannon,
+    title = "Shannon's diversity", opacity = 1)
+```
+
+
 ## Relate to Satellite Data
 
-
+TODO
