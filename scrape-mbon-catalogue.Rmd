@@ -2,34 +2,38 @@
 title: "Scrape MBON Catalogue"
 author: "Ben Best"
 date: "August 31, 2016"
-output: html_document
+output: 
+  html_document: 
+    toc: yes
+    toc_float: true
+    code_folding: hide
+    self_contained: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Use R package `rvest`:
 
-```{r}
+- [rvest: easy web scraping with R | RStudio Blog](https://blog.rstudio.org/2014/11/24/rvest-easy-web-scraping-with-r/)
+- in R console: `vignette("selectorgadget")`
+
+To scrape this website:
+
+- [Marine Biodiversity Observation Network: Search](http://mbon.ioos.us/#module-search?p=proj3857&b=hybrid&page=1&tagId=&q=&tags=)
+
+Code to scrape the website...
+
+```{r scrape, message=FALSE}
 library(rvest)
 library(dplyr)
 library(webshot)
 library(readr)
-```
 
-## Web Scraping
-
-Use `rvest`, see `vignette("selectorgadget")`.
-
-- [rvest: easy web scraping with R | RStudio Blog](https://blog.rstudio.org/2014/11/24/rvest-easy-web-scraping-with-r/)
-
-## source
-
-[Marine Biodiversity Observation Network: Search](http://mbon.ioos.us/#module-search?p=proj3857&b=hybrid&page=1&tagId=&q=&tags=)
-
-```{r}
 url_1 = 'http://mbon.ioos.us/#module-search?p=proj3857&b=hybrid&page=1&tagId=&q=&tags='
 url_p = 'http://mbon.ioos.us/'
+csv   = 'scrape-mbon-catalogue_datasets.csv'
 
 get_page = function(url, js='scrape.js', html='scraped.html'){
   # write javascript for feeding to phantomjs for obtaining rendered html
@@ -48,40 +52,54 @@ get_page = function(url, js='scrape.js', html='scraped.html'){
   }
   "), js)
   webshot:::phantom_run(js)
-}
-get_page(url_1)
-
-pages = 
-  read_html(html) %>%
-  html_nodes('.page') %>%
-  html_children() %>%
-  html_attr('href')
-
-# setup datasets data frame for populating
-datasets = data.frame(
-  name = character(0), 
-  url  = character(0))
-
-# iterate over pages
-for (p in pages){ # p = pages[2]
-  
-  # get html of page
-  get_page(paste0(url_p, p))
-  
-  # get nodes of datasets
-  nodes = 
-    read_html(html) %>%
-    html_nodes('.search_results h3') %>%
-    html_children()
-
-  # add rows of name and url
-  datasets = datasets %>%
-    rbind(
-      data_frame(
-        name = html_text(nodes, trim=T),
-        url  = paste0(url_p, html_attr(nodes, 'href'))))
+  return(html)
 }
 
-# write out datasets
-write_csv(datasets, 'scrape-mbon-catalogue_datasets.csv')
+# scrape if csv doesn't exist (delete to redo)
+if (!file.exists(csv)){
+
+  # get pages to iterate over
+  pages = 
+    get_page(url_1) %>%
+    read_html() %>%
+    html_nodes('.page') %>%
+    html_children() %>%
+    html_attr('href')
+  
+  # setup datasets data frame for populating
+  datasets = data.frame(
+    name = character(0), 
+    url  = character(0))
+  
+  # iterate over pages
+  for (p in pages){ # p = pages[1]
+    
+    # get nodes of datasets
+    nodes = 
+      get_page(paste0(url_p, p)) %>%
+      read_html() %>%
+      html_nodes('.search_results h3') %>%
+      html_children()
+  
+    # add rows of name and url
+    datasets = datasets %>%
+      rbind(
+        data_frame(
+          name = html_text(nodes, trim=T),
+          url  = paste0(url_p, html_attr(nodes, 'href'))))
+  }
+  
+  # write out datasets
+  write_csv(datasets, csv)
+}
 ```
+
+The results...
+
+```{r display, message=F}
+read_csv(csv) %>%
+  mutate(
+    url = sprintf('<a href="%s">%s</a>', url, url)) %>%
+  DT::datatable(escape=F)
+```
+
