@@ -4,8 +4,8 @@ author: "Ben Best"
 date: "August 31, 2016"
 output: 
   html_document: 
-    toc: yes
-    toc_float: true
+    toc: no
+    toc_float: false
     code_folding: hide
     self_contained: true
 ---
