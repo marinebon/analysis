@@ -60,36 +60,6 @@ Technical resources:
 * [dygraphs](http://rstudio.github.io/dygraphs/): interactive time series visualization
 * [rmarkdown - HTML documents](http://rmarkdown.rstudio.com/html_document_format.html)
 
-```{r anchovy timeseries}
-# assign server
-eurl = 'http://oceanview.pfeg.noaa.gov/erddap/'
-
-# search for anchovy datasets
-ed_search(query='anchovy', which='table', url=eurl)
-
-# get metadata on single dataset
-m = info('cciea_C_ANCHO_CC', url=eurl)
-m
-
-# get data
-d = tabledap(m, fields = c('anchovy', 'time'), url=eurl) %>%
-  mutate(date = as_date(time)) %>%
-  select(date, anchovy)
-
-# show data
-datatable(d)
-
-# transform into xts format for dygraph
-d_xts = as.xts(d, order.by=d$date)
-    
-# plot timeseries
-dygraph(d_xts) %>% 
-  dyRangeSelector()
-```
-
-
-
-
 ### Annotations
 
 * [Annotations](http://rstudio.github.io/dygraphs/gallery-annotations.html) for Flower Garden Banks event
@@ -114,7 +84,6 @@ csv_cols = 'data/erddap_Florida-Keys-Reef-Visual-Census_columns.csv'
 # assign ERDDAP server URL
 eurl = 'http://gcoos4.tamu.edu:8080/erddap/' # search/index.html?page=1&itemsPerPage=1000&searchFor=Florida+Keys+Reef+Fish+Visual+Census
 
-  
 if (!file.exists(rds_d)){
   # create csv files
   
@@ -123,6 +92,12 @@ if (!file.exists(rds_d)){
   
   # iterate over years
   all = list()
+  
+  sprintf('dt%d', c(1999,2000,2004,2006,2008,2010,2012,2014))
+  sprintf('fk%d', 1994:2014)
+  
+  http://gcoos4.tamu.edu:8080/erddap/tabledap/dt2000.html
+  
   for (yr in 1994:2014){ # yr = 1994
   
     # construct id for dataset
@@ -249,7 +224,7 @@ More links from metadata:
 
 - **species_nr**: A number indicating the species in a sample/observation
 
-```{r fk1994 marker map}
+```{r fk1994 marker map, eval=F}
 d_1994 = d %>%
   filter(datasetID == 'FloridaKeysReefVisualCensus1994') %>%
   select(
@@ -313,7 +288,7 @@ example data:
 - [ERDDAP - Search: calcofi](http://coastwatch.pfeg.noaa.gov/erddap/search/index.html?page=1&itemsPerPage=1000&searchFor=calcofi)
 - [ERDDAP - CalCOFI Larvae Counts Positive Tows - Data Access Form](http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCalCOFIlrvcntpos.html)
 
-```{r hexbin}
+```{r hexbin, eval=F}
 # missing species?
 library(hexbin)
 
@@ -354,7 +329,7 @@ leaflet(data=d) %>%
 
 ### Not paging
 
-```{r rerddap not paging}
+```{r rerddap not paging, eval=F}
 eurl = 'http://gcoos4.tamu.edu:8080/erddap/'
 
 # showing 20 of 26
@@ -368,7 +343,7 @@ ed_search(query='Florida Keys Reef Visual Census', which='table', url=eurl, page
 
 ### Missing longitude and other data
 
-```{r fk1994 missing data}
+```{r fk1994 missing data, eval=F}
 eurl = 'http://gcoos4.tamu.edu:8080/erddap/'
 
 m = info('fk1994', url=eurl)
@@ -380,7 +355,7 @@ table(d$longitude)
 
 ## Map ERDDAP WMS?
 
-```{r}
+```{r, eval=F}
 library(leaflet)
 
 leaflet() %>% 
