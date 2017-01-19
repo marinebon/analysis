@@ -1,0 +1,195 @@
+---
+title: "rvc_analysis"
+author: "Ben Best"
+date: "January 18, 2017"
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(raster)
+library(sp)
+library(leaflet)
+library(vegan)
+select = dplyr::select
+```
+
+## Introduction
+
+Already fetched RVC data from ERDDAP server in erddap_rvc.Rmd for 1999 - 2014.
+
+```{r subset, eval=T}
+use_subset = T
+rvc_rds = 'data/erddap_Florida-Keys-Reef-Visual-Census.rds'
+#rds_d_s = 'data/erddap_Florida-Keys-Reef-Visual-Census_subset.rds'
+rvc_eff_csv = 'data/rvc_eff.csv'
+rvc_obs_csv = 'data/rvc_obs.csv'
+
+#if (!file.exists(rvc_obs_csv)){
+  rvc = read_rds(rvc_rds)
+    
+  # # create effort csv
+  # rvc %>%
+  #   group_by(eventDate, mapGridNumber, primarySamplingUnit) %>%
+  #   summarize(
+  #     n_stations = length(unique(station_nr))) %>%
+  #   write_csv(rvc_eff_csv)
+  
+  # summarize individual species counts to PSU
+  rvc_psu = rvc %>%
+    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, scientificName, quantificationValue) %>%
+    filter(!is.na(station_nr)) %>%
+    group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>%
+    summarise(
+      q = sum(quantificationValue, na.rm=T) / length(unique(station_nr))) %>%
+    filter(q > 0, !is.na(q)) # filter: NA, 0's
+  
+  # mapgrid locations
+  rvc_mg_loc = rvc %>%
+    group_by(datasetID, mapGridNumber) %>% # 200m x 200m
+    summarise(
+      latitude = mean(latitude, na.rm=T), 
+      longitude = mean(longitude, na.rm=T))
+
+  # summarize to mapgrid locations
+  rvc_mg = rvc_psu %>%
+    left_join(rvc_mg_loc, by=c('datasetID','mapGridNumber')) %>%
+    mutate(
+      year = year(eventDate)) %>%
+    group_by(year, datasetID,  mapGridNumber, scientificName) %>%
+    summarize(
+      q_mean = mean(q))
+
+  # summarize by species
+  # rvc_mg %>%
+  #   group_by(scientificName, year) %>%
+  #   summarise(
+  #     mg_q_var  = var(q_mean),
+  #     mg_q_mean = mean(q_mean)) %>%
+  #   ungroup()
+  
+  # vegan prep
+  rvc_mg_wide = rvc_mg %>%
+    ungroup() %>%
+    spread(scientificName, q_mean, fill=0)
+
+  rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -mapGridNumber), index='simpson'))
+
+  esimp_d = rvc_mg_wide %>%
+    select(year, datasetID, mapGridNumber) %>%
+    mutate(
+      eff_simpson = rvc_mg_eff_simpson) %>%
+    left_join(
+      rvc_mg_loc,
+      by='mapGridNumber')
+  
+  esimp_pts = esimp_d
+  coordinates(esimp_pts) = ~longitude+latitude
+  
+  # plot simpson for one year
+  spplot(esimp_pts %>% subset(year==1999), zcol='eff_simpson')
+  
+  # interactive plot
+  pal = colorNumeric('Spectral', esimp_pts@data$eff_simpson)
+  
+  esimp_pts %>%
+    subset(year==2000) %>%
+    leaflet() %>% 
+      addProviderTiles('Esri.OceanBasemap') %>%
+      addCircleMarkers(
+        radius = 10,
+        color = ~pal(eff_simpson),
+        stroke = FALSE, fillOpacity = 0.5)
+  
+  # rvc_mg_wide %>%
+  #   select(year, mapGridNumber) %>%
+  #   mutate(
+  #     eff_simpson = rvc_mg_eff_simpson) %>%
+  #   left_join(
+  #     rvc_mg_loc,
+  #     by='mapGridNumber')
+
+  # columns ignored (for now):
+  # basisOfRecord,bottomType,class,country,datasetID,datasetName,depth,dynamicProperties,eventDateRemarks,eventDateTimeZone,family,genus,geodeticDatum,habitat,habitat_cd,higherInstitutionCode,institutionCode,kingdom,latitude,locality,longitude,mapNumber,materialSampleID,maximumDepthInMeters,minimumDepthInMeters,observedMeanLengthInCm,order,ownerInstitutionCode,phylum,protection,quantificationMethod,quantificationName,quantificationStatus,quantificationUnit,,recordedBy,region,sampleRadiusInMeters,Samples,scientificNameAuthorship,scientificNameIDITIS,scientificNameIDWoRMS,species_cd,species_nr,specificEpithet,stateProvince,subregion_nr,taxonRank,time,timeUncertainty,underwaterVisibilityInMeters,vernacularName,verticalDatum,waterBody,waterTemperatureInCelsius,zone_nr
+  
+# } else {
+#   
+#   # read csv's for effort & observation
+#   rvc_eff = read_csv(rvc_eff_csv)
+#   rvc_obs = read_csv(rvc_obs_csv)
+# }
+
+  
+# rvc_obs %>%
+#   left_join(
+#     rvc_eff,
+#     by=c('eventDate','mapGridNumber','primarySamplingUnit')) %>%
+#   group_by(eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>%
+#     summarize(
+#       sp_density = length(station_nr))
+# 
+#   
+# if (use_subset){
+#   if (!file.exists(rds_d_s)){
+#     
+#     # subset d for quick coding
+#     read_rds(rds_d) %>%
+#       mutate(
+#         year = year(eventDate)) %>%
+#       filter(
+#         year %in% sort(unique(year))[1:3],                                   # first 3 years
+#         primarySamplingUnit %in% sort(unique(primarySamplingUnit))[1:3]) %>% # first 3 PSUs
+#     write_rds(rds_d_s)
+#     
+#   }
+#   # read d_s, subset dataset
+#   d = read_rds(rds_d_s)
+# } else {
+#   # read rds, full dataset
+#   d = read_rds(rds_d)
+# }
+```
+
+```{r analysis old, eval=F, echo=F}
+
+d %>%
+  mutate(
+    year = year(eventDate)) %>%
+  group_by(primarySamplingUnit, year) %>% # TODO: group_by(..., MPA)
+  # confirm randomly stratified, so each primarySamplingUnit has one date
+  # summarize(
+  #   n_dates = length(unique(eventDate))) %>%
+  # select(primarySamplingUnit, year, n_dates)
+  select(primarySamplingUnit, year, station_nr, eventDate) %>%
+  arrange(primarySamplingUnit, year, eventDate, station_nr) %>%
+  View()
+  summarize(
+    
+    # n_psu = length(unique(primarySamplingUnit))) %>%
+    # select(year, n_psu) %>%
+    # arrange(n_psu)
+
+   n_station = length(unique(station_nr))) %>% #station_nr is station number? 
+    select(year, n_station) %>%
+    arrange(n_station)
+
+#find if any unique psu has all zeros for 
+  filter(quantificationValue > 0, !is.na(quantificationValue)) %>% # subset: 11,011 -> 1,529
+  dim()
+
+```
+
+
+## TODO
+
+- Where's the Dry Tortugas data, eg for 2000?
+- check out MPA
+
+## Notes for ERDDAP Correction
+
+- `mapNumber` -> `mpaNumber`
+- `Samples`: 361,351 records with Samples # and all other fields are NA or NaN?!

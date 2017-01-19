@@ -88,22 +88,24 @@ if (!file.exists(rds_d)){
   # create csv files
   
   # search for datasets
-  ed_search(query='Florida Keys Reef Visual Census', which='table', url=eurl)
-  
+  ed_search(query='Reef Visual Census', which='table', url=eurl)
+  # TODO / NOTE: ed_search(page_size, page) DO NOT WORK! ACK!
+  #ed_search(query='Reef Visual Census', which='table', url=eurl, page=2)
+
   # iterate over years
   all = list()
   
-  sprintf('dt%d', c(1999,2000,2004,2006,2008,2010,2012,2014))
-  sprintf('fk%d', 1994:2014)
+  ids = c(
+    # Dry Tortugas
+    sprintf('dt%d', c(1999,2000,2004,2006,2008,2010,2012,2014)),
+    # Florida Keys
+    sprintf('fk%d', 1999:2014)) # diff't method 1994:1998
   
-  http://gcoos4.tamu.edu:8080/erddap/tabledap/dt2000.html
-  
-  for (yr in 1994:2014){ # yr = 1994
+  for (id in ids){ # id = ids[1]
   
     # construct id for dataset
-    id = sprintf('fk%d', yr)
-    csv_id   = sprintf('data/fk%d.csv', yr)
-    csv_vars = sprintf('data/fk%d_vars.csv', yr)
+    csv_id   = sprintf('data/%s.csv', id)
+    csv_vars = sprintf('data/%s_vars.csv', id)
     cat(sprintf('%s\n', id))
     
     if (!file.exists(csv_vars)){
@@ -122,7 +124,7 @@ if (!file.exists(rds_d)){
       
       # if id not found, then move onto next year
       if (class(m) == 'try-error'){
-        cat(sprintf('  %s NOT FOUND!\n', id)) # fk2013 NOT FOUND!
+        cat(sprintf('  %s NOT FOUND!\n', id)) # fk2013 NOT FOUND! b/c not there
         next
       } 
       
@@ -152,7 +154,7 @@ if (!file.exists(rds_d)){
   # bind all csv's into one data frame
   cat("bind all csv's\n")
   d = data_frame()
-  for (f in list.files('data','fk[0-9]+\\.csv', full.names=T)){ # f = list.files('data','fk[0-9]+\\.csv', full.names=T)[1]
+  for (f in list.files('data','[fk|dt][0-9]+\\.csv', full.names=T)){
     cat(' ', f,'\n')
     d_f = read_csv(
       f, progress=F, trim_ws=T,
@@ -166,7 +168,7 @@ if (!file.exists(rds_d)){
   # evaluate commonness of columns
   cat('eval common columns')
   vars = data_frame()
-  for (f in list.files('data', 'fk[0-9]+_vars\\.csv', full.names = T)){ # f = list.files('data', 'fk[0-9]+_vars\\.csv', full.names = T)[1]
+  for (f in list.files('data', '[fk|dt][0-9]+_vars\\.csv', full.names = T)){ # f = list.files('data', 'fk[0-9]+_vars\\.csv', full.names = T)[1]
     cat(f)
 
     vars = bind_rows(
@@ -193,7 +195,7 @@ d %>%
   head() %>%
   datatable()
 
-View(fk$sample_data)
+#View(fk$sample_data)
 ```
 
 ### Time Series
