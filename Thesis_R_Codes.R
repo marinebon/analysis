@@ -197,6 +197,7 @@ sp_sr_ra = relative_abund %>%
     spec_common_name = tolower(as.character(spec_common_name))) %>%
   arrange(spec_common_name) %>% #alphabeticaly
   select(spec_common_name, Year, Subregion, Relative.Abundance) %>%
+  filter(!is.na(Relative.Abundance), Relative.Abundance > 0) %>% # 22,200 -> 8,744 records
   nest(-Year) %>%
   mutate(
     data_wide        = map(
@@ -244,7 +245,36 @@ sp_sr_ra %>%
   )
 
 #functional_div = dbFD(traits.dist, sp_sr_ra$data_wide[[1]])
-functional_div = dbFD(sp_traits, sp_sr_ra$data_wide[[1]])
+
+# remove species rows in traits without abundances
+sp_traits = sp_traits[rownames(sp_traits) %in% colnames(sp_sr_ra$data_wide[[1]]),]
+
+traits_dist = gowdis(sp_traits, ord="podani")
+
+dim(sp_traits)
+dim(sp_sr_ra$data_wide[[1]])
+
+#functional_div = dbFD(sp_traits, sp_sr_ra$data_wide[[1]])
+#functional_div = dbFD(traits_dist, sp_sr_ra$data_wide[[1]])
+# worked w/out factors...
+functional_div = dbFD(
+  sp_traits %>%
+    select(Maxlength, Trophic_level), 
+  sp_sr_ra$data_wide[[1]])
+
+# didn't work: Species x species distance matrix was still is not Euclidean after 'sqrt' correction. Use another correction method.
+# functional_div = dbFD(
+#   sp_traits %>%
+#     select(Maxlength, Trophic_level, Water_column), 
+#   sp_sr_ra$data_wide[[1]])
+
+# didn't work: Species x species distance matrix was still is not Euclidean after 'sqrt' correction. Use another correction method.
+traits_dist = gowdis(
+  sp_traits %>%
+    select(Maxlength, Trophic_level, Water_column), ord="podani")
+functional_div = dbFD(traits_dist, sp_sr_ra$data_wide[[1]])
+
+
 
 wtf = tibble(
   sp_traits = rownames(sp_traits),
