@@ -26,6 +26,8 @@ _**Units**_: **density** # of individuals observed over 5 minute period within a
 
 ## Summarize Species Densities to Mapgrid Locations
 
+- vignette: [Diversity analysis in vegan](https://cran.r-project.org/web/packages/vegan/vignettes/diversity-vegan.pdf)
+
 - Lefcheck (2015) [The use of functional traits to elucidate
 the causes and consequences of biological diversity](http://www.vims.edu/library/Theses/Lefcheck15.pdf)
 
@@ -37,6 +39,63 @@ the causes and consequences of biological diversity](http://www.vims.edu/library
   
     ![](./img/Schick-et-al2011_Fig4-ord-env-contours.png)
   
+
+### Diversity indices
+
+Copied from `vegan` vignette...
+
+Function `diversity()` finds the most commonly used diversity
+indices (Hill, 1973):
+
+$$
+H = - \sum_{i=1}^S p_i \log_b p_i  \text{Shannon--Weaver}\\
+$$
+
+$$
+D_1 = 1 - \\sum_{i=1}^S p_i^2        &\\text{Simpson}\\
+D_2 = \\frac{1}{\\sum_{i=1}^S p_i^2} &\\text{inverse Simpson}\\
+$$
+
+where $p_i$ is the proportion of species $i$, and $S$ is the number of
+species so that $\sum_{i=1}^S p_i = 1$, and $b$ is the base of the
+logarithm.  It is most common to use natural logarithms (and then we
+mark index as $H'$), but $b=2$ has
+theoretical justification. The default is to use natural logarithms.
+Shannon index is calculated with:
+<<>>=
+H <- diversity(BCI)
+@
+which finds diversity indices for all sites.
+
+\pkg{Vegan} does not have indices for evenness (equitability), but
+the most common of these, Pielou's evenness $J = H'/\log(S)$ is easily
+found as:
+<<>>=
+J <- H/log(specnumber(BCI))
+@
+where `specnumber} is a simple \pkg{vegan} function to find
+the numbers of species.
+
+\pkg{vegan} also can estimate series of R\'{e}nyi and Tsallis
+diversities. R{\'e}nyi diversity of order $a$ is \citep{Hill73number}:
+\begin{equation}
+H_a = \frac{1}{1-a} \log \sum_{i=1}^S p_i^a \,,
+\end{equation}
+and the corresponding Hill number is $N_a = \exp(H_a)$.  Many common
+diversity indices are special cases of Hill numbers: $N_0 = S$, $N_1 =
+\exp(H')$, $N_2 = D_2$, and $N_\infty = 1/(\max p_i)$. The
+corresponding R\'{e}nyi diversities are $H_0 = \log(S)$, $H_1 = H'$, $H_2 =
+- \log(\sum p_i^2)$, and $H_\infty = - \log(\max p_i)$.  
+Tsallis diversity of order $q$ is \citep{Tothmeresz95}:
+\begin{equation}
+  H_q = \frac{1}{q-1} \left(1 - \sum_{i=1}^S p^q \right) \, .
+\end{equation}
+These correspond to common diversity indices: $H_0 = S-1$, $H_1 = H'$,
+and $H_2 = D_1$, and can be converted to Hill numbers:
+\begin{equation}
+  N_q = (1 - (q-1) H_q )^\frac{1}{1-q} \, .
+\end{equation}
+
 
 ## Fetching Data
 
@@ -55,7 +114,7 @@ Fetched data had the following nested elements:
 - map grid number (`mapGridNumber`)
 - year of sampling event (`eventDate`)
 
-Next, we pool
+Next, we aggregate to having average density of species per map grid.
 
 ```{r subset, eval=T}
 use_subset = T
@@ -97,6 +156,8 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
 ```
 
 ## Normalize
+
+Do we normalize species density by site across species, species across sites, or a combination of both? Eg using max. Do the biodiversity metrics already do this? Eg, `vegdist()` applies `wisconsin()` normalization.
 
 ## Biodiversity Metrics
 
