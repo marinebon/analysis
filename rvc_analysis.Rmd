@@ -22,26 +22,26 @@ select = dplyr::select
 
 Already fetched RVC data from ERDDAP server in erddap_rvc.Rmd for 1999 - 2014.
 
+_**Units**_: **density** # of individuals observed over 5 minute period within a 15 m diameter circle (and depth column)
+
+## Summarize Species Densities to Mapgrid Locations
+
 ```{r subset, eval=T}
 use_subset = T
-rvc_rds = 'data/erddap_Florida-Keys-Reef-Visual-Census.rds'
-#rds_d_s = 'data/erddap_Florida-Keys-Reef-Visual-Census_subset.rds'
-rvc_eff_csv = 'data/rvc_eff.csv'
-rvc_obs_csv = 'data/rvc_obs.csv'
+rvc_rds     = 'data/rvc.rds'
+rvc_mg_csv  = 'data/rvc_mapgrid_locations.csv'
+rvc_spp_csv = 'data/rvc_species_densities.csv'
+  
 
-#if (!file.exists(rvc_obs_csv)){
+if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
+  
+  # read data fetched from erddap (erddap_rvc.Rmd)
   rvc = read_rds(rvc_rds)
     
-  # # create effort csv
-  # rvc %>%
-  #   group_by(eventDate, mapGridNumber, primarySamplingUnit) %>%
-  #   summarize(
-  #     n_stations = length(unique(station_nr))) %>%
-  #   write_csv(rvc_eff_csv)
-  
   # summarize individual species counts to PSU
   rvc_psu = rvc %>%
-    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, scientificName, quantificationValue) %>%
+    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, 
+           scientificName, quantificationValue) %>%
     filter(!is.na(station_nr)) %>%
     group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>%
     summarise(
@@ -49,21 +49,63 @@ rvc_obs_csv = 'data/rvc_obs.csv'
     filter(q > 0, !is.na(q)) # filter: NA, 0's
   
   # mapgrid locations
-  rvc_mg_loc = rvc %>%
+  rvc_mg = rvc %>%
     group_by(datasetID, mapGridNumber) %>% # 200m x 200m
     summarise(
       latitude = mean(latitude, na.rm=T), 
       longitude = mean(longitude, na.rm=T))
 
-  # summarize to mapgrid locations
-  rvc_mg = rvc_psu %>%
+  # summarize species to mapgrid locations
+  rvc_spp = rvc_psu %>%
     left_join(rvc_mg_loc, by=c('datasetID','mapGridNumber')) %>%
     mutate(
       year = year(eventDate)) %>%
     group_by(year, datasetID,  mapGridNumber, scientificName) %>%
     summarize(
       q_mean = mean(q))
+```
 
+
+## Biodiversity Metrics
+
+- **Richness**
+  - `specnumber`, 
+  - `rarefy`: rarefied species richness for community ecologists. Normalizes by effort using rarefaction curves.
+- **Evenness**: 
+  - Simpson. 1/D (1 = completely even)
+  - Shannon, effective: rewards higher species linearly (vs just Shannon) 
+- **?**
+  - 
+
+Spatial variants:
+- **alpha**
+- **gamma**
+- **beta**
+
+Others:
+- **functional diversity**
+- **phylogenetic diversity**
+
+
+### Normalizing within Species
+
+- Normalize within the species, or across the number of all individuals?
+$$
+n_s / max(n_s) \\
+n_s / max(N_S) \\
+$$
+
+### Scaling up to Abundance
+
+$$
+d_s = n_s / a_s \\
+a_s = \pi * 15 ^2 \\
+n_A = d_s * A / a_s
+$$
+
+- scaling up to **abundance**:  
+
+```
   # summarize by species
   # rvc_mg %>%
   #   group_by(scientificName, year) %>%
@@ -77,7 +119,7 @@ rvc_obs_csv = 'data/rvc_obs.csv'
     ungroup() %>%
     spread(scientificName, q_mean, fill=0)
 
-  rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -mapGridNumber), index='simpson'))
+  rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='simpson'))
 
   esimp_d = rvc_mg_wide %>%
     select(year, datasetID, mapGridNumber) %>%
@@ -85,13 +127,14 @@ rvc_obs_csv = 'data/rvc_obs.csv'
       eff_simpson = rvc_mg_eff_simpson) %>%
     left_join(
       rvc_mg_loc,
-      by='mapGridNumber')
+      by=c('datasetID','mapGridNumber'))
   
   esimp_pts = esimp_d
   coordinates(esimp_pts) = ~longitude+latitude
   
   # plot simpson for one year
   spplot(esimp_pts %>% subset(year==1999), zcol='eff_simpson')
+  
   
   # interactive plot
   pal = colorNumeric('Spectral', esimp_pts@data$eff_simpson)
@@ -105,53 +148,18 @@ rvc_obs_csv = 'data/rvc_obs.csv'
         color = ~pal(eff_simpson),
         stroke = FALSE, fillOpacity = 0.5)
   
-  # rvc_mg_wide %>%
-  #   select(year, mapGridNumber) %>%
-  #   mutate(
-  #     eff_simpson = rvc_mg_eff_simpson) %>%
-  #   left_join(
-  #     rvc_mg_loc,
-  #     by='mapGridNumber')
-
+  
+  # hex plot
+  ggplot(esimp_d, aes(x=longitude, y=latitude, color=eff_simpson)) +
+    geom_hex() + 
+    scale_fill_distiller('Eff Simp', palette='Spectral')
+  
+  library(trelliscope)
+  
+  
   # columns ignored (for now):
   # basisOfRecord,bottomType,class,country,datasetID,datasetName,depth,dynamicProperties,eventDateRemarks,eventDateTimeZone,family,genus,geodeticDatum,habitat,habitat_cd,higherInstitutionCode,institutionCode,kingdom,latitude,locality,longitude,mapNumber,materialSampleID,maximumDepthInMeters,minimumDepthInMeters,observedMeanLengthInCm,order,ownerInstitutionCode,phylum,protection,quantificationMethod,quantificationName,quantificationStatus,quantificationUnit,,recordedBy,region,sampleRadiusInMeters,Samples,scientificNameAuthorship,scientificNameIDITIS,scientificNameIDWoRMS,species_cd,species_nr,specificEpithet,stateProvince,subregion_nr,taxonRank,time,timeUncertainty,underwaterVisibilityInMeters,vernacularName,verticalDatum,waterBody,waterTemperatureInCelsius,zone_nr
   
-# } else {
-#   
-#   # read csv's for effort & observation
-#   rvc_eff = read_csv(rvc_eff_csv)
-#   rvc_obs = read_csv(rvc_obs_csv)
-# }
-
-  
-# rvc_obs %>%
-#   left_join(
-#     rvc_eff,
-#     by=c('eventDate','mapGridNumber','primarySamplingUnit')) %>%
-#   group_by(eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>%
-#     summarize(
-#       sp_density = length(station_nr))
-# 
-#   
-# if (use_subset){
-#   if (!file.exists(rds_d_s)){
-#     
-#     # subset d for quick coding
-#     read_rds(rds_d) %>%
-#       mutate(
-#         year = year(eventDate)) %>%
-#       filter(
-#         year %in% sort(unique(year))[1:3],                                   # first 3 years
-#         primarySamplingUnit %in% sort(unique(primarySamplingUnit))[1:3]) %>% # first 3 PSUs
-#     write_rds(rds_d_s)
-#     
-#   }
-#   # read d_s, subset dataset
-#   d = read_rds(rds_d_s)
-# } else {
-#   # read rds, full dataset
-#   d = read_rds(rds_d)
-# }
 ```
 
 ```{r analysis old, eval=F, echo=F}
@@ -183,11 +191,18 @@ d %>%
 
 ```
 
+## Background
+
+- **Ecological Reserves** larger and intention of protecting fisheries
+
+- **SPA** (sanctuary preservation area) for dive spots, small
 
 ## TODO
 
 - Where's the Dry Tortugas data, eg for 2000?
 - check out MPA
+
+- fix [obis_biodiv.Rmd](https://marinebon.github.io/analysis/obis_biodiv.html) with proper names
 
 ## Notes for ERDDAP Correction
 

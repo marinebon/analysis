@@ -77,9 +77,9 @@ Technical resources:
 
 ```{r prep FL Keys fish, eval=F}
 # csv files to read (since time consuming to create using ERDDAP server calls)
-csv_d    = 'data/erddap_Florida-Keys-Reef-Visual-Census.csv'
-rds_d    = 'data/erddap_Florida-Keys-Reef-Visual-Census.rds'
-csv_cols = 'data/erddap_Florida-Keys-Reef-Visual-Census_columns.csv'
+csv_d    = 'data/rvc.csv'
+rds_d    = 'data/rvc.rds'
+csv_cols = 'data/rvc_columns.csv'
 
 # assign ERDDAP server URL
 eurl = 'http://gcoos4.tamu.edu:8080/erddap/' # search/index.html?page=1&itemsPerPage=1000&searchFor=Florida+Keys+Reef+Fish+Visual+Census
