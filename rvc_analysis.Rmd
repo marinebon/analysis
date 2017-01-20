@@ -22,30 +22,116 @@ select = dplyr::select
 
 Already fetched RVC data from ERDDAP server in erddap_rvc.Rmd for 1999 - 2014.
 
+_**Units**_: **density** # of individuals observed over 5 minute period within a 15 m diameter circle (and depth column)
+
+## Summarize Species Densities to Mapgrid Locations
+
+- vignette: [Diversity analysis in vegan](https://cran.r-project.org/web/packages/vegan/vignettes/diversity-vegan.pdf)
+
 - Lefcheck (2015) [The use of functional traits to elucidate
 the causes and consequences of biological diversity](http://www.vims.edu/library/Theses/Lefcheck15.pdf)
+
 - Lefcheck (2014) [Dimensions of biodiversity in Chesapeake Bay demersal fishes: patterns and drivers through space and time](http://onlinelibrary.wiley.com/doi/10.1890/ES13-00284.1/abstract) with supplemental [R script](https://figshare.com/articles/Supplement_1_R_script_containing_all_data_analyses_and_functional_phylogenetic_and_taxonomic_trees_in_Newick_format_/3563847)
+
+- [Lab 8. Communities](http://benbestphd.com/landscape-ecology-labs/lab8.html) from [BB's Landscape Ecology Labs/](http://benbestphd.com/landscape-ecology-labs/) ([github](https://github.com/bbest/landscape-ecology-labs))
+
+    - Schick et al (2011) [Community structure in pelagic marine mammals at large spatial scales](http://www.int-res.com/abstracts/meps/v434/p165-181/) _MEPS_
+  
+    ![](./img/Schick-et-al2011_Fig4-ord-env-contours.png)
+  
+
+### Diversity indices
+
+Copied from `vegan` vignette...
+
+Function `diversity()` finds the most commonly used diversity
+indices (Hill, 1973):
+
+$$
+H = - \sum_{i=1}^S p_i \log_b p_i  \text{Shannon--Weaver}\\
+$$
+
+$$
+D_1 = 1 - \\sum_{i=1}^S p_i^2        &\\text{Simpson}\\
+D_2 = \\frac{1}{\\sum_{i=1}^S p_i^2} &\\text{inverse Simpson}\\
+$$
+
+where $p_i$ is the proportion of species $i$, and $S$ is the number of
+species so that $\sum_{i=1}^S p_i = 1$, and $b$ is the base of the
+logarithm.  It is most common to use natural logarithms (and then we
+mark index as $H'$), but $b=2$ has
+theoretical justification. The default is to use natural logarithms.
+Shannon index is calculated with:
+<<>>=
+H <- diversity(BCI)
+@
+which finds diversity indices for all sites.
+
+\pkg{Vegan} does not have indices for evenness (equitability), but
+the most common of these, Pielou's evenness $J = H'/\log(S)$ is easily
+found as:
+<<>>=
+J <- H/log(specnumber(BCI))
+@
+where `specnumber} is a simple \pkg{vegan} function to find
+the numbers of species.
+
+\pkg{vegan} also can estimate series of R\'{e}nyi and Tsallis
+diversities. R{\'e}nyi diversity of order $a$ is \citep{Hill73number}:
+\begin{equation}
+H_a = \frac{1}{1-a} \log \sum_{i=1}^S p_i^a \,,
+\end{equation}
+and the corresponding Hill number is $N_a = \exp(H_a)$.  Many common
+diversity indices are special cases of Hill numbers: $N_0 = S$, $N_1 =
+\exp(H')$, $N_2 = D_2$, and $N_\infty = 1/(\max p_i)$. The
+corresponding R\'{e}nyi diversities are $H_0 = \log(S)$, $H_1 = H'$, $H_2 =
+- \log(\sum p_i^2)$, and $H_\infty = - \log(\max p_i)$.  
+Tsallis diversity of order $q$ is \citep{Tothmeresz95}:
+\begin{equation}
+  H_q = \frac{1}{q-1} \left(1 - \sum_{i=1}^S p^q \right) \, .
+\end{equation}
+These correspond to common diversity indices: $H_0 = S-1$, $H_1 = H'$,
+and $H_2 = D_1$, and can be converted to Hill numbers:
+\begin{equation}
+  N_q = (1 - (q-1) H_q )^\frac{1}{1-q} \, .
+\end{equation}
+
+
+## Fetching Data
+
+```{r fetch}
+
+```
+
+## Summarize by Mapgrid & Species
+
+Fetched data had the following nested elements:
+
+- count (`quantificationValue`) of species (`scientificName`)
+- species size classes (`observedMeanLengthInCm`)
+- secondary station number (`station_nr`)
+- primary sampling unit (`primarySamplingUnit`)
+- map grid number (`mapGridNumber`)
+- year of sampling event (`eventDate`)
+
+Next, we aggregate to having average density of species per map grid.
 
 ```{r subset, eval=T}
 use_subset = T
-rvc_rds = 'data/erddap_Florida-Keys-Reef-Visual-Census.rds'
-#rds_d_s = 'data/erddap_Florida-Keys-Reef-Visual-Census_subset.rds'
-rvc_eff_csv = 'data/rvc_eff.csv'
-rvc_obs_csv = 'data/rvc_obs.csv'
+rvc_rds     = 'data/rvc.rds'
+rvc_mg_csv  = 'data/rvc_mapgrid_locations.csv'
+rvc_spp_csv = 'data/rvc_species_densities.csv'
+  
 
-#if (!file.exists(rvc_obs_csv)){
+if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
+  
+  # read data fetched from erddap (erddap_rvc.Rmd)
   rvc = read_rds(rvc_rds)
     
-  # # create effort csv
-  # rvc %>%
-  #   group_by(eventDate, mapGridNumber, primarySamplingUnit) %>%
-  #   summarize(
-  #     n_stations = length(unique(station_nr))) %>%
-  #   write_csv(rvc_eff_csv)
-  
   # summarize individual species counts to PSU
   rvc_psu = rvc %>%
-    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, scientificName, quantificationValue) %>%
+    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, 
+           scientificName, quantificationValue) %>%
     filter(!is.na(station_nr)) %>%
     group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>%
     summarise(
@@ -53,21 +139,70 @@ rvc_obs_csv = 'data/rvc_obs.csv'
     filter(q > 0, !is.na(q)) # filter: NA, 0's
   
   # mapgrid locations
-  rvc_mg_loc = rvc %>%
+  rvc_mg = rvc %>%
     group_by(datasetID, mapGridNumber) %>% # 200m x 200m
     summarise(
       latitude = mean(latitude, na.rm=T), 
       longitude = mean(longitude, na.rm=T))
 
-  # summarize to mapgrid locations
-  rvc_mg = rvc_psu %>%
+  # summarize species to mapgrid locations
+  rvc_spp = rvc_psu %>%
     left_join(rvc_mg_loc, by=c('datasetID','mapGridNumber')) %>%
     mutate(
       year = year(eventDate)) %>%
     group_by(year, datasetID,  mapGridNumber, scientificName) %>%
     summarize(
       q_mean = mean(q))
+```
 
+## Normalize
+
+Do we normalize species density by site across species, species across sites, or a combination of both? Eg using max. Do the biodiversity metrics already do this? Eg, `vegdist()` applies `wisconsin()` normalization.
+
+## Biodiversity Metrics
+
+- **Richness**
+  - `specnumber`, 
+  - `rarefy`: rarefied species richness for community ecologists. Normalizes by effort using rarefaction curves.
+- **Evenness**: 
+  - Simpson. 1/D (1 = completely even)
+  - Shannon, effective: rewards higher species linearly (vs just Shannon) 
+- **?**
+
+Spatial variants:
+- **alpha**
+- **gamma**
+- **beta**
+
+Others:
+- **functional diversity**
+- **phylogenetic diversity**
+
+BB TODO:
+- Translate [Lab 8. Communities](http://benbestphd.com/landscape-ecology-labs/lab8.html) for calculating Bray-Curtis dissimilarity, and applying NMDS & clustering with environmental gradients (gam contour plot). 
+
+### Normalizing within Species
+
+- Normalize within the species, or across the number of all individuals?
+$$
+n_s / max(n_s) \\
+n_s / max(N_S) \\
+$$
+
+### Scaling up to Abundance
+
+Can we use known habitat distributions (and possibly other environmental data) to predict abundance of a species for the same extent as known stock assessments?
+
+Scaling up to **abundance**:
+
+$$
+d_s = n_s / a_s \\
+a_s = \pi * 7.5 ^2 \\
+n_A = d_s * A / a_s
+$$
+
+
+```
   # summarize by species
   # rvc_mg %>%
   #   group_by(scientificName, year) %>%
@@ -81,7 +216,7 @@ rvc_obs_csv = 'data/rvc_obs.csv'
     ungroup() %>%
     spread(scientificName, q_mean, fill=0)
 
-  rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -mapGridNumber), index='simpson'))
+  rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='simpson'))
 
   esimp_d = rvc_mg_wide %>%
     select(year, datasetID, mapGridNumber) %>%
@@ -89,13 +224,14 @@ rvc_obs_csv = 'data/rvc_obs.csv'
       eff_simpson = rvc_mg_eff_simpson) %>%
     left_join(
       rvc_mg_loc,
-      by='mapGridNumber')
+      by=c('datasetID','mapGridNumber'))
   
   esimp_pts = esimp_d
   coordinates(esimp_pts) = ~longitude+latitude
   
   # plot simpson for one year
   spplot(esimp_pts %>% subset(year==1999), zcol='eff_simpson')
+  
   
   # interactive plot
   pal = colorNumeric('Spectral', esimp_pts@data$eff_simpson)
@@ -109,53 +245,18 @@ rvc_obs_csv = 'data/rvc_obs.csv'
         color = ~pal(eff_simpson),
         stroke = FALSE, fillOpacity = 0.5)
   
-  # rvc_mg_wide %>%
-  #   select(year, mapGridNumber) %>%
-  #   mutate(
-  #     eff_simpson = rvc_mg_eff_simpson) %>%
-  #   left_join(
-  #     rvc_mg_loc,
-  #     by='mapGridNumber')
-
+  
+  # hex plot
+  ggplot(esimp_d, aes(x=longitude, y=latitude, color=eff_simpson)) +
+    geom_hex() + 
+    scale_fill_distiller('Eff Simp', palette='Spectral')
+  
+  library(trelliscope)
+  
+  
   # columns ignored (for now):
   # basisOfRecord,bottomType,class,country,datasetID,datasetName,depth,dynamicProperties,eventDateRemarks,eventDateTimeZone,family,genus,geodeticDatum,habitat,habitat_cd,higherInstitutionCode,institutionCode,kingdom,latitude,locality,longitude,mapNumber,materialSampleID,maximumDepthInMeters,minimumDepthInMeters,observedMeanLengthInCm,order,ownerInstitutionCode,phylum,protection,quantificationMethod,quantificationName,quantificationStatus,quantificationUnit,,recordedBy,region,sampleRadiusInMeters,Samples,scientificNameAuthorship,scientificNameIDITIS,scientificNameIDWoRMS,species_cd,species_nr,specificEpithet,stateProvince,subregion_nr,taxonRank,time,timeUncertainty,underwaterVisibilityInMeters,vernacularName,verticalDatum,waterBody,waterTemperatureInCelsius,zone_nr
   
-# } else {
-#   
-#   # read csv's for effort & observation
-#   rvc_eff = read_csv(rvc_eff_csv)
-#   rvc_obs = read_csv(rvc_obs_csv)
-# }
-
-  
-# rvc_obs %>%
-#   left_join(
-#     rvc_eff,
-#     by=c('eventDate','mapGridNumber','primarySamplingUnit')) %>%
-#   group_by(eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>%
-#     summarize(
-#       sp_density = length(station_nr))
-# 
-#   
-# if (use_subset){
-#   if (!file.exists(rds_d_s)){
-#     
-#     # subset d for quick coding
-#     read_rds(rds_d) %>%
-#       mutate(
-#         year = year(eventDate)) %>%
-#       filter(
-#         year %in% sort(unique(year))[1:3],                                   # first 3 years
-#         primarySamplingUnit %in% sort(unique(primarySamplingUnit))[1:3]) %>% # first 3 PSUs
-#     write_rds(rds_d_s)
-#     
-#   }
-#   # read d_s, subset dataset
-#   d = read_rds(rds_d_s)
-# } else {
-#   # read rds, full dataset
-#   d = read_rds(rds_d)
-# }
 ```
 
 ```{r analysis old, eval=F, echo=F}
@@ -186,6 +287,36 @@ d %>%
   dim()
 
 ```
+
+## Relating to the Environment
+
+### Use Values in Dataset
+
+Existing values:
+
+- bottomType:
+- mapNumber: in/out of MPA
+- depth: bottom or in water column where observation?
+  - minimumDepthInMeters
+  - maximumDepthInMeters
+- underwaterVisibilityInMeters: use that as a filter, and offset to account for bias
+- waterTemperatureInCelsius
+- habitat, habitat_cd: Artificial Reef, Continuous High/Medium/Low Relief, Isolated High/Medium/Low Relief (Patch)
+- zone_nr: like Inshore, Foreef, Lagoon...
+
+So we can evaluate the relationship between these predictors for basic understanding. But to predict elsewhere, we need these data for locations outside survey dataset.
+
+
+### Extract and Predict with Outside Values
+
+- BB asked Maria for seascapes data to extract and predict with this dataset (2017-01-19)
+
+
+## Background
+
+- **Ecological Reserves** larger and intention of protecting fisheries
+
+- **SPA** (sanctuary preservation area) for dive spots, small
 
 ```{r functional diversity} 
 
@@ -350,6 +481,8 @@ do.call(rbind,lapply(list("richness","evenness","simpson","shannon", "func.div")
 
 - Where's the Dry Tortugas data, eg for 2000?
 - check out MPA
+
+- fix [obis_biodiv.Rmd](https://marinebon.github.io/analysis/obis_biodiv.html) with proper names
 
 ## Notes for ERDDAP Correction
 

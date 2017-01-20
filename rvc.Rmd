@@ -1,0 +1,227 @@
+---
+title: "RVC for Infographic"
+author: "Ben Best"
+date: "August 9, 2016"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages({
+  library(rerddap) # install.packages("rerddap")
+  library(tidyverse)
+  library(stringr)
+  library(lubridate)
+  library(DT)
+  library(dygraphs)
+  library(xts)
+})
+```
+
+## Data
+
+* [Marine Biodiversity Observation Network](http://mbon.ioos.us/)
+* [Marine Biodiversity Observation Network: Florida Keys Reef Fish Visual Census](http://mbon.ioos.us/#module-metadata/53cb8d58-ae4d-43e1-aea3-640db9491db2/9436fa4e-73aa-4189-b551-b3b484a9d4e9)
+    
+    > This fish survey timeseries contains count and length measurements for 340 species observed between 1995 and 2012 along the southern coast of Florida.
+    >
+    > Filter options:
+    > - Alpha: takes the average of event values within the selected area
+    > - Gamma: groups all events within the selected area and treats them as a single sample
+    > - Beta: Gamma/Alpha
+    > 
+    > Richness: Count of distinct species
+    > - % Dominance (Berger-Parker): Numerical importance of the most abundant species
+    > - Shannon-Wiener Diversity: This index quantifies the uncertainty associated with species prediction
+    > - Pielou's Evenness: Species evenness quantifies how close in count each species is within a sampling event
+    
+    - [ERDDAP - Information about 1994 Florida Keys Reef Visual Census, v3.3, from Marine Biodiversity Observation Network](http://gcoos4.tamu.edu:8080/erddap/info/fk1994/index.html)
+
+* [Marine Biodiversity Observation Network: SECOORA Fisheries and Wildlife Monitoring - Fisheries-Independent Monitoring, Assessment, and Prediction (FIMMAP)](http://mbon.ioos.us/#module-metadata/07a25110-e19e-4ad4-b29c-a6978b68a90d/200d32d2-c827-451d-846e-f3413090dbfa)
+* [Marine Biodiversity Observation Network: SECOORA Fisheries and Wildlife Monitoring - Marine Resources Monitoring, Assessment, and Prediction (MARMAP)](http://mbon.ioos.us/#module-metadata/07a25110-e19e-4ad4-b29c-a6978b68a90d/7b846aaa-db05-408d-bd77-ae4f12281480)
+
+
+
+* [RVC | Data Portal](http://www.sefsc.noaa.gov/rvc_analysis20/?acton=index)
+* [jeremiaheb/rvc: New implementation of the rvcstats package, which produces summary statistics for the South Florida Reef Visual Census](https://github.com/jeremiaheb/rvc)
+
+
+## rvc R package
+
+- **REGION**: A code indicating the region. DRY TORT: Dry Tortugas, FLA KEYS: Florida Keys, and SEFCRI: Southeast Peninsular Florida.
+
+```{r}
+library(rvc) # devtools::install_github('jeremiaheb/rvc')
+
+## Download desired Years/Regions data from server
+fk = getRvcData(years = 1999:2014, regions='FLA KEYS') # c("FLA KEYS", "DRY TORT", "SEFCRI")
+
+## Take a look at object structure
+str(fk, 1) # 3 data.frames
+
+## write taxa for manually adding groups
+#write_csv(fk$taxonomic_data, 'data/rvc-fk_taxa.csv')
+
+## Make a list of species
+## You can use full scientific names, common names, or
+## species codes (first 3 letters of genus, and first 4 of species)
+## Only scientific names are case-sensitive
+spcs = c("Epinephelus morio", "Black Grouper", "STE VARI")
+
+## Calculate statistics for entire sampling domain
+fk_dens = getDomainDensity(   fk, species = spcs)
+fk_abun = getDomainAbundance( fk, species = spcs)
+fk_occ  = getDomainOccurrence(fk, species = spcs)
+
+## Stratum Level Estimates for Red Grouper in 2011 in
+## The Florida Keys
+sdens = getStratumDensity(keys11_14, species = "EPI MORI",
+                         years = 2011, regions = "FLA KEYS")
+```
+
+```{r}
+library(rvc) # devtools::install_github('jeremiaheb/rvc')
+
+fk = getRvcData(years = 1999:2014, regions='FLA KEYS') # c("FLA KEYS", "DRY TORT", "SEFCRI")
+
+spp = read_csv('data/rvc-fk_taxa.csv') %>%
+  filter(group=='herbivores') # only flagged parrotfish
+
+fk_dens = getDomainDensity(fk, species = spp$SCINAME)
+fk_abun = getDomainAbundance(fk, species = spp$SCINAME)
+
+
+
+# transform into xts format for dygraph
+
+    
+# density timeseries
+fk_dens %>%
+  filter(
+    SPECIES_CD %in% c('SCA SPE.','SPA SPE.')) %>%
+  mutate(
+    #yr = as.Date(sprintf('%d-01-01', .$YEAR), format='%Y-%m-%d'),
+    sp = recode(SPECIES_CD, 'SCA SPE.'='Scarus', 'SPA SPE.'='Sparisoma'),
+    lwr = density - var,
+    upr = density + var) %>%
+  select(yr=YEAR, sp, density, lwr, upr) %>%
+  gather(v, val, -yr, -sp) %>%
+  unite(sp_v, sp, v) %>%
+  spread(sp_v, val) %>%
+  #as.xts(select(., -yr), order.by=.$yr) %>%
+  dygraph(main='Herbivores (parrotfish) density in FL Keys') %>% 
+  dySeries(c(   'Scarus_lwr',    'Scarus_density',    'Scarus_upr'), label =   'Scarus spp.') %>%
+  dySeries(c('Sparisoma_lwr', 'Sparisoma_density', 'Sparisoma_upr'), label ='Sparisoma spp.') %>%
+  dyRangeSelector()
+
+
+# abundance timeseries
+fk_abun %>%
+  filter(
+    SPECIES_CD %in% c('SCA SPE.','SPA SPE.')) %>%
+  mutate(
+    #yr = as.Date(sprintf('%d-01-01', .$YEAR), format='%Y-%m-%d'),
+    sp = recode(SPECIES_CD, 'SCA SPE.'='Scarus', 'SPA SPE.'='Sparisoma'),
+    lwr = max(abundance - 1.96 * var, 0),
+    upr = abundance + 1.96 * var) %>%
+  select(yr=YEAR, sp, abundance, lwr, upr) %>%
+  gather(v, val, -yr, -sp) %>%
+  unite(sp_v, sp, v) %>%
+  spread(sp_v, val) %>%
+  #as.xts(select(., -yr), order.by=.$yr) %>%
+  dygraph(main='Herbivores (Parrotfish) Abundance in FL Keys') %>% 
+  dySeries(c(   'Scarus_lwr',    'Scarus_abundance',    'Scarus_upr'), label =   'Scarus spp.') %>%
+  dySeries(c('Sparisoma_lwr', 'Sparisoma_abundance', 'Sparisoma_upr'), label ='Sparisoma spp.') %>%
+  dyRangeSelector()
+
+
+
+# 
+
+fk$sample_data %>%
+  group_by(SPECIES_CD) %>%
+  summarise(
+    n = sum(NUM > 0)) %>%
+  arrange(desc(n))
+fk$sample_data %>%
+  filter(SPECIES_CD == 'THA BIFA') %>% # ='Scarus'
+  
+  summary ise(SPECIES_NR)
+
+
+Mean   : 0.03759
+
+quantile(10)
+mean()
+quantile(90)
+```
+
+
+
+### LIVING RESOURCES
+
+From Megan Hepner's "CR Questions and Datasets Available.docx":
+
+**CR Question 7**: What is the status and trend of keystone and foundation species and how is it changing?
+
+Potential indicators/data to answer the question	
+
+-	Stony corals (CREMP data)
+-	Long-spined sea urchin (RVC or CREMP data) - not in RVC
+-	Herbivorous fish (RVC) 
+
+- [NOAA CoRIS - Managing herbivores for their impacts on Caribbean coral reef ecosystems: A summary report for managers and practitioners](http://www.coris.noaa.gov/activities/herbivores_caribbean/)
+
+    - Citation: Adam, T. C., Burkepile D. E., Ruttenberg B. I., Paddack M. J. (2015) [Managing herbivores for their impacts on Caribbean coral reef ecosystems: A summary report for managers and practitioners](http://data.nodc.noaa.gov/coris/library/NOAA/CRCP/project/182/Caribbean_herbivore_report_Final.pdf). PRBD-2015-1. US National Marine Fisheries Service
+    
+    Adam-etal_2015_Caribbean-Coral-Reef-Herbivores_Table1.csv
+
+    - Reference: Adam TC, Burkepile DE, Ruttenberg BI, Paddack MJ (2015) [Herbivory and the resilience of Caribbean coral reefs: knowledge gaps and implications for management](http://www.coris.noaa.gov/exit.html?url=http%3A%2F%2Fwww.int-res.com%2Farticles%2Ffeature%2Fm520p001.pdf). Mar Ecol Prog Ser 520:1-20. doi: 10.3354/meps11170
+    
+
+
+
+Calculation/Metric 
+-	Density 
+
+**CR Question 8**: What is the status and trend of other focal species and how is it changing?
+
+Potential indicators/data to answer the question	
+
+-	Grunt-snapper complex (RVC)
+    -	white grunt, blue stripped grunt, mutton snapper, gray snapper, yellowtail snapper, hogfish, red grouper, black grouper, Graysby
+-	Queen conch (RVC)
+-	Caribbean spiny lobster (RVC)
+-	Sea turtles 
+
+Calculation/Metric 
+-	Density 
+
+**CR Question 9**: What is the status of non-indigenous species and how is it changing?
+
+Potential indicators/data to answer the question	
+
+-	Lionfish (RVC, REEF, USGS data)
+-	Orange cup coral (CREMP data)
+
+Calculation/Metric 
+
+-	Density 
+
+**CR Question 10**: What is the status of biodiversity and how is it changing?
+
+Potential indicators/data to answer the question	
+
+-	Vertebrates (RVC/FIM)
+-	Invertebrates (CREMP/RVC/FIM)
+
+Calculation/Metric 
+
+-	Species richness and evenness
+-	Functional diversity 
+-	Simpson index
