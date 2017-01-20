@@ -158,18 +158,18 @@ Combine ERDDAP datasets across years for Florida Keys Reef Visual Census
 
 [ERDDAP: gcoos4.tamu.edu](http://gcoos4.tamu.edu:8080/erddap/info/index.html?page=1&itemsPerPage=1000)
 
-```{r fetch, eval=F}
+```{r fetch}
 # csv files to read (since time consuming to create using ERDDAP server calls)
-csv_d    = 'data/rvc.csv'
-rds_d    = 'data/rvc.rds'
-csv_cols = 'data/rvc_columns.csv'
+rvc_rds     = 'data/rvc.rds'
+rvc_mg_csv  = 'data/rvc_mapgrid_locations.csv'
+rvc_spp_csv = 'data/rvc_species_densities.csv'
 
 # assign ERDDAP server URL
 eurl = 'http://gcoos4.tamu.edu:8080/erddap/' # search/index.html?page=1&itemsPerPage=1000&searchFor=Florida+Keys+Reef+Fish+Visual+Census
 
 # only load full rvc.rds if need be (since slow)
 if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
-  if (!file.exists(rds_d)){
+  if (!file.exists(rvc_rds)){
     # create csv files
     
     # search for datasets
@@ -248,7 +248,7 @@ if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
       d = bind_rows(d, d_f)
     }
     
-    write_rds(d, rds_d) # 4.4 GB
+    write_rds(d, rvc_rds) # 4.4 GB
   
     # evaluate commonness of columns
     cat('eval common columns')
@@ -270,7 +270,7 @@ if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
   
   } else {
     # read data
-    d = read_rds(rds_d)
+    d = read_rds(rvc_rds)
   }
   
   # show columns (with same class) not consistently available across all datasets
@@ -296,11 +296,8 @@ Fetched data had the following nested elements:
 
 Next, we aggregate to having average density of species per map grid.
 
-```{r aggregate, eval=F}
+```{r aggregate}
 use_subset = T
-rvc_rds     = 'data/rvc.rds'
-rvc_mg_csv  = 'data/rvc_mapgrid_locations.csv'
-rvc_spp_csv = 'data/rvc_species_densities.csv'
   
 if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
   
@@ -348,15 +345,71 @@ rvc_spp = read_csv(rvc_spp_csv)
 
 Do we normalize species density by site across species, species across sites, or a combination of both? Eg using max. Do the biodiversity metrics already do this? Eg, `vegdist()` applies `wisconsin()` normalization.
 
+- Normalize within the species, or across the number of all individuals?
+$$
+n_s / max(n_s) \\
+n_s / max(N_S) \\
+$$
+
+```{r wide}
+# vegan prep
+rvc_tbl = rvc_spp %>%
+  nest(-year) %>%
+  mutate(
+    data_wide = map(data, ~ spread(data=.x, scientificName, q_mean, fill=0)))
+```
+
+```{r normalize}
+# feed site (rows) x species (columns)
+norm = vegdist(rvc_mg_wide, method="bray", binary=F, diag=F, upper=F) 
+
+rvc_tbl = rvc_tbl %>%
+  mutate(
+    norm = map(data_wide, ~ vegdist(
+      data = .x %>% select(-datasetID, -mapGridNumber), 
+      method="bray", binary=F, diag=F, upper=F)))
+ 
+v1 = vegdist(rvc_tbl$data_wide[[1]] %>% select(-datasetID, -mapGridNumber), 
+        method="bray", binary=F, diag=F, upper=F)                  
+
+spread(data=.x, scientificName, q_mean, fill=0)))
+
+```
+
+```{r}
+# summarize by species
+rvc_spp_w = rvc_spp %>%
+   group_by(scientificName, year) %>%
+   summarise(
+     mg_q_var  = var(q_mean),
+     mg_q_mean = mean(q_mean)) %>%
+   ungroup()
+```
+
+
+
+
+
 ## Biodiversity Metrics
 
 - **Richness**
   - `specnumber`, 
   - `rarefy`: rarefied species richness for community ecologists. Normalizes by effort using rarefaction curves.
+```{r Richness}  
+  richness= rarefy(rvc_mg_wide,)
+  rcurve= rarecurve()
+```  
 - **Evenness**: 
-  - Simpson. 1/D (1 = completely even)
-  - Shannon, effective: rewards higher species linearly (vs just Shannon) 
-- **?**
+  - `Simpson` 1/D (1 = completely even)
+  - `Shannon`, effective: rewards higher species linearly (vs just Shannon)
+
+```{r Effective Simpson}
+  rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='simpson'))
+``` 
+
+```{r Effective Shannon}
+    rvc_mg_eff_shannon = exp(diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='shannon'))
+```
 
 Spatial variants:
 - **alpha**
@@ -365,20 +418,104 @@ Spatial variants:
 
 Others:
 - **functional diversity**
+
+```{r Effective Rao Q}
+#read in species list 
+spname= readr::read_csv(species_code_species_common_names.rdm)
+#read in trait*species dataframe 
+sptrait= readr::read_csv(species_trait_matrix.csv)
+#read in species*community relative abundance dataframe 
+
+#compute relative abundance of each species in each year and community
+#remove 'sp.' in abundance dataframe - identified to family 
+#substitute scientific name with species common name 
+
+#arrange alphabetically 
+
+#match species in trait dataframe with species in abundance dataframe 
+
+#compute Gowers distance correcting with Podani for ordered traits 
+traits.dist=gowdis(traits,ord="podani")
+
+#Because values of Rao's Q can be maximized when fewer than the max number of functional types are present unless distances are ultramtetric ---- Clustering method to produce ultrametric dendrogram 
+
+#to account for sensitivity in clustering use multiple algorithms  (Mouchet et al., 2008) 
+tree_methods = c("single","complete","average","mcquitty","ward")
+trees=lapply(tree_methods,function(i) hclust(traits.dist,method=i))
+par(mfrow=c(3,2))
+for(i in 1:length(trees)) {plot(trees[[i]])}
+
+#convert trees to ultrametric
+trees.ultra=lapply(trees,function(i) cl_ultrametric(as.hclust(i)))
+
+#Plot each tree
+par(mfrow=c(3,2))
+for (i in 1:length(trees.ultra)) {plot(trees.ultra[[i]])}
+
+#Build the consensus tree (Mouchet et al 2008 Oikos)
+ensemble.trees=cl_ensemble(list=trees)
+class(ensemble.trees)
+consensus.tree=cl_consensus(ensemble.trees) 
+#plot(consensus.tree)
+
+#Calculate dissimilarity values for each tree using 2-norm (Merigot et al 2010 Ecology) to determine which tree best preserves orignial distances
+all.trees=c(trees.ultra,consensus.tree[1])
+names(all.trees)=c(tree_methods,"consensus")
+(trees.dissim=lapply(all.trees,function(i) cl_dissimilarity(i,traits.dist,method="spectral")))
+
+#Identify best tree and isolate
+trees.dissim2=do.call(rbind,trees.dissim)
+min.tree=which.min(trees.dissim2)
+names(all.trees)[min.tree]
+func.dist=all.trees[names(all.trees)==names(all.trees)[min.tree]][[1]]
+
+#Confirm lowest 2-norm value
+cl_dissimilarity(func.dist,traits.dist,method="spectral")
+
+#Scale by the max value so that all values are between 0-1 (clue package)
+func.dist=func.dist/max(func.dist)
+#Plot the best tree
+# par(mfrow=c(1,1))
+# par(mar=c(3,1,0,16))
+# plot(func.dist,horiz=TRUE)
+#Save plot: 10" x 15"
+
+#Write newick tree
+write.tree(as.phylo(as.hclust(func.dist)),"Functional dendrogram")
+
+#calculate effective Rao's Q 
+#Calculate alpha diversity
+# TODO: change below inputs to just relative abundance 
+alphadiv.list=lapply(list(catch_abund,catch_biomass,catch_pres.abs),
+ function(i) {
+   #Extract community matrix from object in list
+   mat=i[,c(1,18:(ncol(i)-1))]
+   rownames(mat)=mat[,1]; mat=mat[,-1]
+   #Calculate relative values for community matrix
+   rel.mat=mat/apply(mat,1,sum)
+   #Compute functional diversity 
+   func.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% as.matrix(func.dist) %*% x))
+ }
+```
 - **phylogenetic diversity**
+
+## Correlation
+
+```{r correlation}
+
+#Test significance of Spearman rank correlations (H0 that rho = 0)
+do.call(rbind,lapply(list("richness","evenness","simpson","shannon", "func.div"),function(j) {
+  do.call(rbind,lapply(rev(list("richness","evenness","simpson","shannon","func.div")),function(k) {
+    data.frame(title=paste(j,k,sep="~"),
+               correlation=cor.test(alphadiv.list[[2]][,j],alphadiv.list[[2]][,k])$estimate,
+               p.value=cor.test(alphadiv.list[[2]][,j],alphadiv.list[[2]][,k])$p.value) } ) ) } ) ) 
+
+```
 
 BB TODO:
 - Translate [Lab 8. Communities](http://benbestphd.com/landscape-ecology-labs/lab8.html) for calculating Bray-Curtis dissimilarity, and applying NMDS & clustering with environmental gradients (gam contour plot). 
 
-### Normalizing within Species
-
-- Normalize within the species, or across the number of all individuals?
-$$
-n_s / max(n_s) \\
-n_s / max(N_S) \\
-$$
-
-### Scaling up to Abundance
+## Scaling up to Abundance
 
 Can we use known habitat distributions (and possibly other environmental data) to predict abundance of a species for the same extent as known stock assessments?
 
@@ -390,23 +527,7 @@ a_s = \pi * 7.5 ^2 \\
 n_A = d_s * A / a_s
 $$
 
-
 ```
-  # summarize by species
-  # rvc_mg %>%
-  #   group_by(scientificName, year) %>%
-  #   summarise(
-  #     mg_q_var  = var(q_mean),
-  #     mg_q_mean = mean(q_mean)) %>%
-  #   ungroup()
-  
-  # vegan prep
-  rvc_mg_wide = rvc_mg %>%
-    ungroup() %>%
-    spread(scientificName, q_mean, fill=0)
-
-  rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='simpson'))
-
   esimp_d = rvc_mg_wide %>%
     select(year, datasetID, mapGridNumber) %>%
     mutate(
@@ -509,82 +630,7 @@ So we can evaluate the relationship between these predictors for basic understan
 
 ```{r functional diversity, eval=F} 
 
-#read in species list 
-spname= readr::read_csv(species_code_species_common_names.rdm)
-#read in trait*species dataframe 
-sptrait= readr::read_csv(species_trait_matrix.csv)
-#read in species*community relative abundance dataframe 
 
-#compute relative abundance of each species in each year and community
-#remove 'sp.' in abundance dataframe - identified to family 
-#substitute scientific name with species common name 
-
-#arrange alphabetically 
-
-#match species in trait dataframe with species in abundance dataframe 
-
-#compute Gowers distance correcting with Podani for ordered traits 
-traits.dist=gowdis(traits,ord="podani")
-
-#Because values of Rao's Q can be maximized when fewer than the max number of functional types are present unless distances are ultramtetric ---- Clustering method to produce ultrametric dendrogram 
-
-#to account for sensitivity in clustering use multiple algorithms  (Mouchet et al., 2008) 
-tree_methods = c("single","complete","average","mcquitty","ward")
-trees=lapply(tree_methods,function(i) hclust(traits.dist,method=i))
-par(mfrow=c(3,2))
-for(i in 1:length(trees)) {plot(trees[[i]])}
-
-#convert trees to ultrametric
-trees.ultra=lapply(trees,function(i) cl_ultrametric(as.hclust(i)))
-
-#Plot each tree
-par(mfrow=c(3,2))
-for (i in 1:length(trees.ultra)) {plot(trees.ultra[[i]])}
-
-#Build the consensus tree (Mouchet et al 2008 Oikos)
-ensemble.trees=cl_ensemble(list=trees)
-class(ensemble.trees)
-consensus.tree=cl_consensus(ensemble.trees) 
-#plot(consensus.tree)
-
-#Calculate dissimilarity values for each tree using 2-norm (Merigot et al 2010 Ecology) to determine which tree best preserves orignial distances
-all.trees=c(trees.ultra,consensus.tree[1])
-names(all.trees)=c(tree_methods,"consensus")
-(trees.dissim=lapply(all.trees,function(i) cl_dissimilarity(i,traits.dist,method="spectral")))
-
-#Identify best tree and isolate
-trees.dissim2=do.call(rbind,trees.dissim)
-min.tree=which.min(trees.dissim2)
-names(all.trees)[min.tree]
-func.dist=all.trees[names(all.trees)==names(all.trees)[min.tree]][[1]]
-
-#Confirm lowest 2-norm value
-cl_dissimilarity(func.dist,traits.dist,method="spectral")
-
-#Scale by the max value so that all values are between 0-1 (clue package)
-func.dist=func.dist/max(func.dist)
-#Plot the best tree
-# par(mfrow=c(1,1))
-# par(mar=c(3,1,0,16))
-# plot(func.dist,horiz=TRUE)
-#Save plot: 10" x 15"
-
-#Write newick tree
-write.tree(as.phylo(as.hclust(func.dist)),"Functional dendrogram")
-
-#calculate effective Rao's Q 
-#Calculate alpha diversity
-# TODO: change below inputs to just relative abundance 
-alphadiv.list=lapply(list(catch_abund,catch_biomass,catch_pres.abs),
- function(i) {
-   #Extract community matrix from object in list
-   mat=i[,c(1,18:(ncol(i)-1))]
-   rownames(mat)=mat[,1]; mat=mat[,-1]
-   #Calculate relative values for community matrix
-   rel.mat=mat/apply(mat,1,sum)
-   #Compute functional diversity 
-   func.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% as.matrix(func.dist) %*% x))
- }
 
 ## readr::read_csv() # keeps strings as character, vs evil factors. yay! from readr
 # utils::read.csv() # evil! base read of csv
@@ -651,18 +697,6 @@ traits_dist = gowdis(
     select(Maxlength, Trophic_level, Water_column), ord="podani",)
 
 functional_div = dbFD(traits_dist, sp_sr_ra$data_wide[[1]],corr = 'cailliez', calc.FRic= F, calc.FGR=F, calc.CWM=F )
-
-```
-
-```{r correlation, eval=F}
-
-#Test significance of Spearman rank correlations (H0 that rho = 0)
-do.call(rbind,lapply(list("richness","evenness","simpson","shannon", "func.div"),function(j) {
-  do.call(rbind,lapply(rev(list("richness","evenness","simpson","shannon","func.div")),function(k) {
-    data.frame(title=paste(j,k,sep="~"),
-               correlation=cor.test(alphadiv.list[[2]][,j],alphadiv.list[[2]][,k])$estimate,
-               p.value=cor.test(alphadiv.list[[2]][,j],alphadiv.list[[2]][,k])$p.value) } ) ) } ) ) 
-
 
 ```
 
