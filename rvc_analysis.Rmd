@@ -31,6 +31,32 @@ the causes and consequences of biological diversity](http://www.vims.edu/library
 
 - Lefcheck (2014) [Dimensions of biodiversity in Chesapeake Bay demersal fishes: patterns and drivers through space and time](http://onlinelibrary.wiley.com/doi/10.1890/ES13-00284.1/abstract) with supplemental [R script](https://figshare.com/articles/Supplement_1_R_script_containing_all_data_analyses_and_functional_phylogenetic_and_taxonomic_trees_in_Newick_format_/3563847)
 
+- [Lab 8. Communities](http://benbestphd.com/landscape-ecology-labs/lab8.html) from [BB's Landscape Ecology Labs/](http://benbestphd.com/landscape-ecology-labs/) ([github](https://github.com/bbest/landscape-ecology-labs))
+
+    - Schick et al (2011) [Community structure in pelagic marine mammals at large spatial scales](http://www.int-res.com/abstracts/meps/v434/p165-181/) _MEPS_
+  
+    ![](./img/Schick-et-al2011_Fig4-ord-env-contours.png)
+  
+
+## Fetching Data
+
+```{r fetch}
+
+```
+
+## Summarize by Mapgrid & Species
+
+Fetched data had the following nested elements:
+
+- count (`quantificationValue`) of species (`scientificName`)
+- species size classes (`observedMeanLengthInCm`)
+- secondary station number (`station_nr`)
+- primary sampling unit (`primarySamplingUnit`)
+- map grid number (`mapGridNumber`)
+- year of sampling event (`eventDate`)
+
+Next, we pool
+
 ```{r subset, eval=T}
 use_subset = T
 rvc_rds     = 'data/rvc.rds'
@@ -70,6 +96,7 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
       q_mean = mean(q))
 ```
 
+## Normalize
 
 ## Biodiversity Metrics
 
@@ -80,7 +107,6 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
   - Simpson. 1/D (1 = completely even)
   - Shannon, effective: rewards higher species linearly (vs just Shannon) 
 - **?**
-  - 
 
 Spatial variants:
 - **alpha**
@@ -91,6 +117,8 @@ Others:
 - **functional diversity**
 - **phylogenetic diversity**
 
+BB TODO:
+- Translate [Lab 8. Communities](http://benbestphd.com/landscape-ecology-labs/lab8.html) for calculating Bray-Curtis dissimilarity, and applying NMDS & clustering with environmental gradients (gam contour plot). 
 
 ### Normalizing within Species
 
@@ -102,13 +130,16 @@ $$
 
 ### Scaling up to Abundance
 
+Can we use known habitat distributions (and possibly other environmental data) to predict abundance of a species for the same extent as known stock assessments?
+
+Scaling up to **abundance**:
+
 $$
 d_s = n_s / a_s \\
-a_s = \pi * 15 ^2 \\
+a_s = \pi * 7.5 ^2 \\
 n_A = d_s * A / a_s
 $$
 
-- scaling up to **abundance**:  
 
 ```
   # summarize by species
@@ -195,6 +226,30 @@ d %>%
   dim()
 
 ```
+
+## Relating to the Environment
+
+### Use Values in Dataset
+
+Existing values:
+
+- bottomType:
+- mapNumber: in/out of MPA
+- depth: bottom or in water column where observation?
+  - minimumDepthInMeters
+  - maximumDepthInMeters
+- underwaterVisibilityInMeters: use that as a filter, and offset to account for bias
+- waterTemperatureInCelsius
+- habitat, habitat_cd: Artificial Reef, Continuous High/Medium/Low Relief, Isolated High/Medium/Low Relief (Patch)
+- zone_nr: like Inshore, Foreef, Lagoon...
+
+So we can evaluate the relationship between these predictors for basic understanding. But to predict elsewhere, we need these data for locations outside survey dataset.
+
+
+### Extract and Predict with Outside Values
+
+- BB asked Maria for seascapes data to extract and predict with this dataset (2017-01-19)
+
 
 ## Background
 
