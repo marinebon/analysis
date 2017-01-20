@@ -5,16 +5,26 @@ date: "January 18, 2017"
 output:
   html_document:
     code_folding: hide
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
-library(lubridate)
-library(raster)
-library(sp)
-library(leaflet)
-library(vegan)
+knitr::opts_chunk$set(echo = TRUE, eval=T)
+
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(lubridate)
+  library(raster)
+  library(sp)
+  library(leaflet)
+  library(vegan)
+  library(rerddap)
+  library(DT)
+  #library(dygraphs)
+  #library(xts)
+})
+
 select = dplyr::select
 ```
 
@@ -48,59 +58,229 @@ Function `diversity()` finds the most commonly used diversity
 indices (Hill, 1973):
 
 $$
-H = - \sum_{i=1}^S p_i \log_b p_i  \text{Shannon--Weaver}\\
+H = - \sum_{i=1}^S p_i \log_b p_i  \tag{Shannon-Weaver}\\
 $$
 
 $$
-D_1 = 1 - \\sum_{i=1}^S p_i^2        &\\text{Simpson}\\
-D_2 = \\frac{1}{\\sum_{i=1}^S p_i^2} &\\text{inverse Simpson}\\
+D_1 = 1 - \sum_{i=1}^S p_i^2        \tag{Simpson}
 $$
 
-where $p_i$ is the proportion of species $i$, and $S$ is the number of
-species so that $\sum_{i=1}^S p_i = 1$, and $b$ is the base of the
-logarithm.  It is most common to use natural logarithms (and then we
-mark index as $H'$), but $b=2$ has
-theoretical justification. The default is to use natural logarithms.
-Shannon index is calculated with:
-<<>>=
+$$
+D_2 = \frac{1}{\sum_{i=1}^S p_i^2}   \tag{inverse Simpson}
+$$
+
+where $p_i$ is the proportion of species $i$, and $S$ is the number of species so that $\sum_{i=1}^S p_i = 1$, and $b$ is the base of the logarithm.  It is most common to use natural logarithms (and then we mark index as $H'$), but $b=2$ has
+theoretical justification. The default is to use natural logarithms. Shannon index is calculated with:
+
+```{r vegan diversity}
+data(BCI)
 H <- diversity(BCI)
-@
+```
+
 which finds diversity indices for all sites.
 
-\pkg{Vegan} does not have indices for evenness (equitability), but
-the most common of these, Pielou's evenness $J = H'/\log(S)$ is easily
-found as:
-<<>>=
+Package `vegan` does not have indices for evenness (equitability), but the most common of these, Pielou's evenness $J = H'/\log(S)$ is easily found as:
+
+```{r vegan evenness}
 J <- H/log(specnumber(BCI))
-@
-where `specnumber} is a simple \pkg{vegan} function to find
+```
+
+where `specnumber()` is a simple `vegan` function to find
 the numbers of species.
 
-\pkg{vegan} also can estimate series of R\'{e}nyi and Tsallis
-diversities. R{\'e}nyi diversity of order $a$ is \citep{Hill73number}:
-\begin{equation}
-H_a = \frac{1}{1-a} \log \sum_{i=1}^S p_i^a \,,
-\end{equation}
-and the corresponding Hill number is $N_a = \exp(H_a)$.  Many common
-diversity indices are special cases of Hill numbers: $N_0 = S$, $N_1 =
-\exp(H')$, $N_2 = D_2$, and $N_\infty = 1/(\max p_i)$. The
-corresponding R\'{e}nyi diversities are $H_0 = \log(S)$, $H_1 = H'$, $H_2 =
-- \log(\sum p_i^2)$, and $H_\infty = - \log(\max p_i)$.  
-Tsallis diversity of order $q$ is \citep{Tothmeresz95}:
-\begin{equation}
-  H_q = \frac{1}{q-1} \left(1 - \sum_{i=1}^S p^q \right) \, .
-\end{equation}
-These correspond to common diversity indices: $H_0 = S-1$, $H_1 = H'$,
-and $H_2 = D_1$, and can be converted to Hill numbers:
-\begin{equation}
-  N_q = (1 - (q-1) H_q )^\frac{1}{1-q} \, .
-\end{equation}
+Package `vegan` also can estimate series of Rényi and Tsallis
+diversities. Rényi diversity of order $a$ is (Hill, 1973):
+
+$$
+H_a = \frac{1}{1-a} \log \sum_{i=1}^S p_i^a
+$$
+
+and the corresponding Hill number is $N_a = \exp(H_a)$.  Many common diversity indices are special cases of Hill numbers: $N_0 = S$, $N_1 = \exp(H')$, $N_2 = D_2$, and $N_\infty = 1/(\max p_i)$. The corresponding Rényi diversities are $H_0 = \log(S)$, $H_1 = H'$, $H_2 = - \log(\sum p_i^2)$, and $H_\infty = - \log(\max p_i)$.Tsallis diversity of order $q$ is (Tothmeresz, 1995):
+
+$$
+H_q = \frac{1}{q-1} \left(1 - \sum_{i=1}^S p^q \right)
+$$
+
+These correspond to common diversity indices: $H_0 = S-1$, $H_1 = H'$, and $H_2 = D_1$, and can be converted to Hill numbers:
+
+$$
+N_q = (1 - (q-1) H_q )^\frac{1}{1-q}
+$$
+
+## Data
+
+* [Marine Biodiversity Observation Network](http://mbon.ioos.us/)
+* [Marine Biodiversity Observation Network: Florida Keys Reef Fish Visual Census](http://mbon.ioos.us/#module-metadata/53cb8d58-ae4d-43e1-aea3-640db9491db2/9436fa4e-73aa-4189-b551-b3b484a9d4e9)
+    
+    > This fish survey timeseries contains count and length measurements for 340 species observed between 1995 and 2012 along the southern coast of Florida.
+    >
+    > Filter options:
+    > - Alpha: takes the average of event values within the selected area
+    > - Gamma: groups all events within the selected area and treats them as a single sample
+    > - Beta: Gamma/Alpha
+    > 
+    > Richness: Count of distinct species
+    > - % Dominance (Berger-Parker): Numerical importance of the most abundant species
+    > - Shannon-Wiener Diversity: This index quantifies the uncertainty associated with species prediction
+    > - Pielou's Evenness: Species evenness quantifies how close in count each species is within a sampling event
+
+    - [ERDDAP - Information about 1994 Florida Keys Reef Visual Census, v3.3, from Marine Biodiversity Observation Network](http://gcoos4.tamu.edu:8080/erddap/info/fk1994/index.html)
+
+* [Marine Biodiversity Observation Network: SECOORA Fisheries and Wildlife Monitoring - Fisheries-Independent Monitoring, Assessment, and Prediction (FIMMAP)](http://mbon.ioos.us/#module-metadata/07a25110-e19e-4ad4-b29c-a6978b68a90d/200d32d2-c827-451d-846e-f3413090dbfa)
+* [Marine Biodiversity Observation Network: SECOORA Fisheries and Wildlife Monitoring - Marine Resources Monitoring, Assessment, and Prediction (MARMAP)](http://mbon.ioos.us/#module-metadata/07a25110-e19e-4ad4-b29c-a6978b68a90d/7b846aaa-db05-408d-bd77-ae4f12281480)
+
+
+
+* [RVC | Data Portal](http://www.sefsc.noaa.gov/rvc_analysis20/?acton=index)
+* [jeremiaheb/rvc: New implementation of the rvcstats package, which produces summary statistics for the South Florida Reef Visual Census](https://github.com/jeremiaheb/rvc)
+
+
+## Time Series
+
+Technical resources:
+
+* [rerddap](https://github.com/ropensci/rerddap): R client for working with ERDDAP servers
+* [dygraphs](http://rstudio.github.io/dygraphs/): interactive time series visualization
+* [rmarkdown - HTML documents](http://rmarkdown.rstudio.com/html_document_format.html)
+
+### Annotations
+
+* [Annotations](http://rstudio.github.io/dygraphs/gallery-annotations.html) for Flower Garden Banks event
+
+### Shiny Integration
+
+* [Using in Shiny Applications](http://rstudio.github.io/dygraphs/shiny.html): eg `input$series_date_window` for dygraph called `series`
 
 
 ## Fetching Data
 
-```{r fetch}
+Combine ERDDAP datasets across years for Florida Keys Reef Visual Census
 
+[ERDDAP: gcoos4.tamu.edu](http://gcoos4.tamu.edu:8080/erddap/info/index.html?page=1&itemsPerPage=1000)
+
+```{r fetch, eval=F}
+# csv files to read (since time consuming to create using ERDDAP server calls)
+csv_d    = 'data/rvc.csv'
+rds_d    = 'data/rvc.rds'
+csv_cols = 'data/rvc_columns.csv'
+
+# assign ERDDAP server URL
+eurl = 'http://gcoos4.tamu.edu:8080/erddap/' # search/index.html?page=1&itemsPerPage=1000&searchFor=Florida+Keys+Reef+Fish+Visual+Census
+
+# only load full rvc.rds if need be (since slow)
+if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
+  if (!file.exists(rds_d)){
+    # create csv files
+    
+    # search for datasets
+    ed_search(query='Reef Visual Census', which='table', url=eurl)
+    # TODO / NOTE: ed_search(page_size, page) DO NOT WORK! ACK!
+    #ed_search(query='Reef Visual Census', which='table', url=eurl, page=2)
+  
+    # iterate over years
+    all = list()
+    
+    ids = c(
+      # Dry Tortugas
+      sprintf('dt%d', c(1999,2000,2004,2006,2008,2010,2012,2014)),
+      # Florida Keys
+      sprintf('fk%d', 1999:2014)) # diff't method 1994:1998
+    
+    for (id in ids){ # id = ids[1]
+    
+      # construct id for dataset
+      csv_id   = sprintf('data/%s.csv', id)
+      csv_vars = sprintf('data/%s_vars.csv', id)
+      cat(sprintf('%s\n', id))
+      
+      if (!file.exists(csv_vars)){
+        # get metadata for dataset
+        m = try(info(id, url=eurl), silent = T)
+        
+        if (class(m) == 'try-error') next
+        cat(sprintf('  writing %s\n', csv_vars))
+        write_csv(m$variables, csv_vars)
+      }
+      
+      if (!file.exists(csv_id)){
+      
+        # get metadata for dataset
+        m = try(info(id, url=eurl), silent = T)
+        
+        # if id not found, then move onto next year
+        if (class(m) == 'try-error'){
+          cat(sprintf('  %s NOT FOUND!\n', id)) # fk2013 NOT FOUND! b/c not there
+          next
+        } 
+        
+        # try fetching data, up to 10x
+        dap_attempts = 1
+        while (dap_attempts < 11){
+          
+          # load data for individual dataset
+          cat('  fetching data', ifelse(dap_attempts > 1, sprintf(': attempt %d\n', dap_attempts), '\n'))
+          d_id = try(tabledap(m, fields=m$variables$variable_name, url=eurl), silent = T)
+          
+          # break out of loop if not giving error
+          if (!'try-error' %in% class(d_id)) break
+          dap_attempts =+ 1
+          cat('  error fetching data\n')
+        }
+      
+        # write to csv
+        cat('  writing to csv\n')
+        d_id %>%
+          tbl_df() %>%
+          write_csv(csv_id)
+        
+      } # end if (!file.exists(csv_id))
+    } # end for (yr in 1994:2014)
+    
+    # bind all csv's into one data frame
+    cat("bind all csv's\n")
+    d = data_frame()
+    for (f in list.files('data','[fk|dt][0-9]+\\.csv', full.names=T)){
+      cat(' ', f,'\n')
+      d_f = read_csv(
+        f, progress=F, trim_ws=T,
+        col_types = cols(
+          protection = col_character()))
+      d = bind_rows(d, d_f)
+    }
+    
+    write_rds(d, rds_d) # 4.4 GB
+  
+    # evaluate commonness of columns
+    cat('eval common columns')
+    vars = data_frame()
+    for (f in list.files('data', '[fk|dt][0-9]+_vars\\.csv', full.names = T)){ # f = list.files('data', 'fk[0-9]+_vars\\.csv', full.names = T)[1]
+      cat(f)
+  
+      vars = bind_rows(
+        vars,
+        read_csv(f) %>%
+          mutate(
+            id = str_replace(f, 'data/(.*)_vars\\.csv', '\\1')))
+    }
+    
+    v = vars %>%
+      select(variable_name, data_type, id) %>% # drop actual_range
+      spread(id, data_type)
+    
+  
+  } else {
+    # read data
+    d = read_rds(rds_d)
+  }
+  
+  # show columns (with same class) not consistently available across all datasets
+  summary(d)
+  
+  d %>%
+    head() %>%
+    datatable()
+}
+#View(fk$sample_data)
 ```
 
 ## Summarize by Mapgrid & Species
@@ -116,13 +296,12 @@ Fetched data had the following nested elements:
 
 Next, we aggregate to having average density of species per map grid.
 
-```{r subset, eval=T}
+```{r aggregate, eval=F}
 use_subset = T
 rvc_rds     = 'data/rvc.rds'
 rvc_mg_csv  = 'data/rvc_mapgrid_locations.csv'
 rvc_spp_csv = 'data/rvc_species_densities.csv'
   
-
 if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
   
   # read data fetched from erddap (erddap_rvc.Rmd)
@@ -147,12 +326,22 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
 
   # summarize species to mapgrid locations
   rvc_spp = rvc_psu %>%
-    left_join(rvc_mg_loc, by=c('datasetID','mapGridNumber')) %>%
+    left_join(rvc_mg, by=c('datasetID','mapGridNumber')) %>%
     mutate(
       year = year(eventDate)) %>%
     group_by(year, datasetID,  mapGridNumber, scientificName) %>%
     summarize(
       q_mean = mean(q))
+  
+  # write to csv
+  write_csv(rvc_mg, rvc_mg_csv)
+  write_csv(rvc_spp, rvc_spp_csv)
+  
+}
+
+# read in data
+rvc_mg = read_csv(rvc_mg_csv)
+rvc_spp = read_csv(rvc_spp_csv)
 ```
 
 ## Normalize
@@ -318,7 +507,7 @@ So we can evaluate the relationship between these predictors for basic understan
 
 - **SPA** (sanctuary preservation area) for dive spots, small
 
-```{r functional diversity} 
+```{r functional diversity, eval=F} 
 
 #read in species list 
 spname= readr::read_csv(species_code_species_common_names.rdm)
@@ -465,7 +654,7 @@ functional_div = dbFD(traits_dist, sp_sr_ra$data_wide[[1]],corr = 'cailliez', ca
 
 ```
 
-```{r correlation}
+```{r correlation, eval=F}
 
 #Test significance of Spearman rank correlations (H0 that rho = 0)
 do.call(rbind,lapply(list("richness","evenness","simpson","shannon", "func.div"),function(j) {
