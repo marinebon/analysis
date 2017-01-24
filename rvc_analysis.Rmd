@@ -21,6 +21,7 @@ suppressPackageStartupMessages({
   library(vegan)
   library(rerddap)
   library(DT)
+  library(vegan)
   #library(dygraphs)
   #library(xts)
 })
@@ -160,6 +161,7 @@ Combine ERDDAP datasets across years for Florida Keys Reef Visual Census
 
 ```{r fetch}
 # csv files to read (since time consuming to create using ERDDAP server calls)
+
 rvc_rds     = 'data/rvc.rds'
 rvc_mg_csv  = 'data/rvc_mapgrid_locations.csv'
 rvc_spp_csv = 'data/rvc_species_densities.csv'
@@ -297,8 +299,6 @@ Fetched data had the following nested elements:
 Next, we aggregate to having average density of species per map grid.
 
 ```{r aggregate}
-use_subset = T
-  
 if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
   
   # read data fetched from erddap (erddap_rvc.Rmd)
@@ -361,18 +361,15 @@ rvc_tbl = rvc_spp %>%
 
 ```{r normalize}
 # feed site (rows) x species (columns)
-norm = vegdist(rvc_mg_wide, method="bray", binary=F, diag=F, upper=F) 
-
 rvc_tbl = rvc_tbl %>%
   mutate(
     norm = map(data_wide, ~ vegdist(
       data = .x %>% select(-datasetID, -mapGridNumber), 
       method="bray", binary=F, diag=F, upper=F)))
  
-v1 = vegdist(rvc_tbl$data_wide[[1]] %>% select(-datasetID, -mapGridNumber), 
-        method="bray", binary=F, diag=F, upper=F)                  
+#norm = vegdist(rvc_tbl$data_wide[[1]] %>% select(-datasetID, -mapGridNumber),  method="bray", binary=F, diag=F, upper=F)                  
 
-spread(data=.x, scientificName, q_mean, fill=0)))
+spread(data=.x, scientificName, q_mean, fill=0)
 
 ```
 
@@ -386,18 +383,14 @@ rvc_spp_w = rvc_spp %>%
    ungroup()
 ```
 
-
-
-
-
 ## Biodiversity Metrics
 
 - **Richness**
   - `specnumber`, 
   - `rarefy`: rarefied species richness for community ecologists. Normalizes by effort using rarefaction curves.
 ```{r Richness}  
-  richness= rarefy(rvc_mg_wide,)
-  rcurve= rarecurve()
+  #richness= rarefy(rvc_mg_wide,)
+  #rcurve= rarecurve()
 ```  
 - **Evenness**: 
   - `Simpson` 1/D (1 = completely even)
