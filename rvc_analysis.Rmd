@@ -21,7 +21,8 @@ suppressPackageStartupMessages({
   library(vegan)
   library(rerddap)
   library(DT)
-  library(vegan)
+  library(readxl)
+  library(stringr)
   #library(dygraphs)
   #library(xts)
 })
@@ -34,6 +35,59 @@ select = dplyr::select
 Already fetched RVC data from ERDDAP server in erddap_rvc.Rmd for 1999 - 2014.
 
 _**Units**_: **density** # of individuals observed over 5 minute period within a 15 m diameter circle (and depth column)
+
+## Gameplan
+
+RVC:
+
+Consider functional groups = Trophic_group, Exploited, Invasive (lionfish), Exploited (snapper grouper complex that's overfished; see Habitat_Indicator_Dataset_Metric_Hepner.xlsx|Importance:exploited, focal/charismatic)
+
+1. Diversity index symbol - Effective Simpson, Effective Shannon, Richness (rarefy), Evenness
+1. **Exploited** reef fish - abundance 
+1. **Invasive** fish - abundance 
+1. Herbivores: parrotfish - abundance 
+1. Other fish groups?: 
+  - cleaner fish: (gobis) but small
+  - forage fish: (pigfish), more pelagic or in seagrass
+  - ornamental: (damselfish, clown fish), different name?
+  - missing?: red snapper
+1. Herbivores: parrotfish - abundance 
+1. Trophic level (>4 = apex predators?) - abundance
+
+CREMP:
+
+1. Stony coral - % cover, % disease, Simpson, Shannon 
+1. Sponges - % cover 
+1. Lobster - abundance
+1. Queen conch - abundance 
+1. Diadema - abundance 
+
+Add-ons:
+
+1. Functional Diversity: 
+  - capture across larger group, or within functional groups
+  - Rao's Q
+1. Evaluate size classes over time, and in/out MPAs. Need to not aggregate across length classes.
+1. Differentiate 4 sections: 
+  - upper/lower: more protected by land
+  - middle: nutrient & freshwater influx from Bay
+  - Dry Tortugas: more oceanic
+
+Visualization:
+- Treemap: box size by abundance / biomass, with hierarchical zooming
+
+Scaling up to Abundance? Seperate from diversity.
+
+1. Static: initially for FKNMS area for static products
+1. Shiny: draw or select a region of interest and calculate abundance (ie total fish)
+
+Normalizing. Using bray-curtis.
+
+[Jerald Ault - Google Scholar Citations](https://scholar.google.com/citations?hl=en&user=cljlXUIAAAAJ&view_op=list_works&sortby=pubdate): fisheries modeler working on size classes inside/outside MPAs
+- before/after Dry Tortugas
+
+
+
 
 ## Summarize Species Densities to Mapgrid Locations
 
@@ -341,6 +395,108 @@ rvc_mg = read_csv(rvc_mg_csv)
 rvc_spp = read_csv(rvc_spp_csv)
 ```
 
+## Form Groups based on Traits
+
+```{r traits to groups}
+# read in species traits
+spp_traits = read_csv('data/species_trait_matrix.csv') %>%
+  mutate(
+    Substrate_type = recode(
+      Substrate_type, 
+      'Hard bottoml' = 'Hard bottom',
+      'Hardbottom' = 'Hard bottom'))
+
+# remove white space on values and fix column names
+spp_traits = apply(spp_traits, 2, function(x) str_trim(x)) %>%
+  as_tibble()
+names(spp_traits) = names(spp_traits) %>%
+  str_trim() %>% str_replace(' ', '_') %>% tolower()
+#View(spp_traits)
+
+# read in species roles
+spp_roles = read_excel(
+  'data/Habitat_Indicator_Dataset_Metric_Hepner.xlsx',
+  'Species Ecological Role')
+
+# remove white space on values and fix column names
+spp_roles = apply(spp_roles, 2, function(x) str_trim(x)) %>%
+  as_tibble()
+names(spp_roles) = names(spp_roles) %>%
+  str_trim() %>% str_replace(' ', '_') %>% tolower()
+#View(spp_roles)
+ 
+spp_roles = spp_roles %>%
+  mutate(
+    habitat  = zoo::na.locf(habitat), # fill down habitat
+    importance = recode(
+      importance, 
+      'exploited, focal'       = 'exploited', 
+      'exploited, charismatic' = 'exploited'),
+    importance = ifelse(
+      str_detect(indicator, '.*angelfish') & importance == 'ecologically important',
+      'ornamental', importance)) %>%
+  filter(!is.na(indicator))
+#View(spp_roles)
+
+# join to rvc_spp
+rvc_spp = rvc_spp %>%
+  select(
+    year, dataset_id = datasetID, 
+    mapgridnum = mapGridNumber, scientific_name = scientificName) %>%
+  left_join(
+    spp_traits,
+    by = c('scientific_name'='latin_name')) %>%
+  left_join(
+    spp_roles,
+    by = c('scientific_name'='scientific_name')) %>%
+  mutate(
+    group = ifelse(is.na(importance), trophic_group, importance))
+# View(rvc_spp)
+
+rvc_sum = rvc_spp %>%
+  group_by(importance, trophic_group, group, scientific_name, common_name) %>%
+  summarize(
+    n = n())
+write_csv(rvc_sum, 'data/rvc_spp_group-summary.csv')
+rvc_sum %>%
+  filter(is.na(group)) %>%
+  write_csv('data/rvc_spp_no-group-removed.csv')
+
+rvc_spp = rvc_spp %>%
+  filter(!is.na(group))
+```  
+
+
+```{r}
+# TODO: 
+
+```
+
+# missing 
+rvc_spp_missing = unique(rvc_spp$scientificName)[!unique(rvc_spp$scientificName) %in% unique(spp_traits$Latin_name)]
+# 30 of 362 rvc_spp$scientificName not in spp_traits$Latin_name
+# Myrichthys breviceps (n=1 in 2012)
+# we can average numeric traits: Maxlength, Trophic_level, Gregariousness
+#   vs categorical: Trophic_group	Water_column	Diel_activity	Substrate_type	Complexity
+
+spp_traits_missing = unique(spp_traits$Latin_name)[!unique(spp_traits$Latin_name) %in% unique(rvc_spp$scientificName)]
+# eg missing red snapper (Lutjanus campechanus)
+spp_traits %>%
+  filter(Latin_name %in% spp_traits_missing) %>%
+  arrange(Trophic_group, Common_name) %>%
+  View()
+
+
+
+  
+rvc_spp %>%
+  #filter(scientificName=='Panulirus argus')   # lobster (n=0)
+  filter(scientificName=='Diadema antillarum') # urchin (n=0)
+
+```
+
+
+
 ## Normalize
 
 Do we normalize species density by site across species, species across sites, or a combination of both? Eg using max. Do the biodiversity metrics already do this? Eg, `vegdist()` applies `wisconsin()` normalization.
@@ -413,10 +569,6 @@ Others:
 - **functional diversity**
 
 ```{r Effective Rao Q}
-#read in species list 
-spname= readr::read_csv(species_code_species_common_names.rdm)
-#read in trait*species dataframe 
-sptrait= readr::read_csv(species_trait_matrix.csv)
 #read in species*community relative abundance dataframe 
 
 #compute relative abundance of each species in each year and community

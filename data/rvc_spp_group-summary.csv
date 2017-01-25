@@ -1,0 +1,364 @@
+importance,trophic_group,group,scientific_name,common_name,n
+exploited,Benthic invertivore,exploited,Lachnolaimus maximus,Hogfish,5127
+exploited,Higher carnivore,exploited,Epinephelus itajara,Goliath grouper,171
+exploited,Higher carnivore,exploited,Epinephelus morio,Red grouper,2952
+exploited,Higher carnivore,exploited,Epinephelus striatus,Nassau grouper,213
+exploited,Higher carnivore,exploited,Lutjanus analis,Mutton snapper,2294
+exploited,Higher carnivore,exploited,Lutjanus griseus,Gray snapper,2503
+exploited,Higher carnivore,exploited,Mycteroperca bonaci,Black grouper,2320
+exploited,Higher carnivore,exploited,Mycteroperca microlepis,Gag,133
+exploited,Higher carnivore,exploited,Mycteroperca phenax,Scamp,741
+exploited,Higher carnivore,exploited,Mycteroperca venenosa,Yellowfin grouper,162
+exploited,Higher carnivore,exploited,Ocyurus chrysurus,Yellowtail snapper,5787
+forage fish,Benthic invertivore,forage fish,Lagodon rhomboides,Pinfish,11
+forage fish,Benthic invertivore,forage fish,Orthopristis chrysoptera,Pigfish,4
+forage fish,Higher carnivore,forage fish,Caranx crysos,Blue runner,394
+forage fish,Higher carnivore,forage fish,Decapterus punctatus,Round scad,58
+forage fish,Higher carnivore,forage fish,Diplectrum formosum,Sand perch,50
+forage fish,Higher carnivore,forage fish,Harengula jaguana,Scaled sardine,14
+forage fish,Omnivore,forage fish,Hemiramphus brasiliensis,Ballyhoo,48
+invasive,Higher carnivore,invasive,Pterois volitans,Red lionfish,319
+ornamental,Benthic invertivore,ornamental,Chaetodon capistratus,Foureye butterflyfish,4070
+ornamental,Benthic invertivore,ornamental,Holacanthus bermudensis,Blue angelfish,3081
+ornamental,Benthic invertivore,ornamental,Pomacanthus arcuatus,Gray angelfish,4846
+ornamental,Higher carnivore,ornamental,Hypoplectrus unicolor,Butter hamlet,3967
+NA,Algal farmer,Algal farmer,Microspathodon chrysurus,Yellowtail damselfish,1097
+NA,Algal farmer,Algal farmer,Stegastes adustus,Dusky damselfish,1507
+NA,Algal farmer,Algal farmer,Stegastes diencaeus,Longfin damselfish,654
+NA,Algal farmer,Algal farmer,Stegastes leucostictus,Beaugregory,3061
+NA,Algal farmer,Algal farmer,Stegastes partitus,Bicolor damselfish,6490
+NA,Algal farmer,Algal farmer,Stegastes planifrons,Threespot damselfish,3105
+NA,Algal farmer,Algal farmer,Stegastes variabilis,Cocoa damselfish,5863
+NA,Benthic invertivore,Benthic invertivore,Acanthemblemaria aspera,Roughhead blenny,137
+NA,Benthic invertivore,Benthic invertivore,Acanthemblemaria chaplini,Papillose blenny,14
+NA,Benthic invertivore,Benthic invertivore,Acanthemblemaria maria,Secretary blenny,6
+NA,Benthic invertivore,Benthic invertivore,Acanthemblemaria spinosa,Spinyhead blenny,2
+NA,Benthic invertivore,Benthic invertivore,Acanthostracion polygonia,Honeycomb cowfish,117
+NA,Benthic invertivore,Benthic invertivore,Acanthostracion quadricornis,Scrawled cowfish,421
+NA,Benthic invertivore,Benthic invertivore,Aetobatus narinari,Spotted eagle ray,87
+NA,Benthic invertivore,Benthic invertivore,Amblycirrhitus pinos,Redspotted hawkfish,82
+NA,Benthic invertivore,Benthic invertivore,Anisotremus surinamensis,Black margate,416
+NA,Benthic invertivore,Benthic invertivore,Anisotremus virginicus,Porkfish,3578
+NA,Benthic invertivore,Benthic invertivore,Apogon aurolineatus,Bridle cardinalfish,8
+NA,Benthic invertivore,Benthic invertivore,Apogon binotatus,Barred cardinalfish,107
+NA,Benthic invertivore,Benthic invertivore,Apogon maculatus,Flamefish,135
+NA,Benthic invertivore,Benthic invertivore,Apogon phenax,Mimic cardinalfish,1
+NA,Benthic invertivore,Benthic invertivore,Apogon pseudomaculatus,Twospot cardinalfish,142
+NA,Benthic invertivore,Benthic invertivore,Apogon quadrisquamatus,Sawcheek cardinalfish,4
+NA,Benthic invertivore,Benthic invertivore,Apogon townsendi,Belted cardinalfish,29
+NA,Benthic invertivore,Benthic invertivore,Archosargus probatocephalus,Sheepshead,31
+NA,Benthic invertivore,Benthic invertivore,Archosargus rhomboidalis,Sea bream,29
+NA,Benthic invertivore,Benthic invertivore,Astrapogon puncticulatus,Blackfin cardinalfish,1
+NA,Benthic invertivore,Benthic invertivore,Astrapogon stellatus,Conchfish,2
+NA,Benthic invertivore,Benthic invertivore,Balistes capriscus,Gray triggerfish,361
+NA,Benthic invertivore,Benthic invertivore,Balistes vetula,Queen triggerfish,132
+NA,Benthic invertivore,Benthic invertivore,Bodianus pulchellus,Spotfin hogfish,297
+NA,Benthic invertivore,Benthic invertivore,Bodianus rufus,Spanish hogfish,3123
+NA,Benthic invertivore,Benthic invertivore,Calamus bajonado,Jolthead porgy,155
+NA,Benthic invertivore,Benthic invertivore,Calamus calamus,Saucereye porgy,4522
+NA,Benthic invertivore,Benthic invertivore,Calamus nodosus,Knobbed porgy,58
+NA,Benthic invertivore,Benthic invertivore,Calamus penna,Sheepshead porgy,70
+NA,Benthic invertivore,Benthic invertivore,Calamus proridens,Littlehead porgy,87
+NA,Benthic invertivore,Benthic invertivore,Canthidermis sufflamen,Ocean triggerfish,334
+NA,Benthic invertivore,Benthic invertivore,Chaenopsis limbaughi,Yellowface pikeblenny,1
+NA,Benthic invertivore,Benthic invertivore,Chaetodon sedentarius,Reef butterflyfish,2675
+NA,Benthic invertivore,Benthic invertivore,Chaetodon striatus,Banded butterflyfish,1475
+NA,Benthic invertivore,Benthic invertivore,Chilomycterus antennatus,Bridled burrfish,22
+NA,Benthic invertivore,Benthic invertivore,Chilomycterus atinga,Spotted burrfish,1
+NA,Benthic invertivore,Benthic invertivore,Chilomycterus schoepfii,Striped burrfish,39
+NA,Benthic invertivore,Benthic invertivore,Ctenogobius saepepallens,Dash goby,161
+NA,Benthic invertivore,Benthic invertivore,Dasyatis americana,Southern stingray,143
+NA,Benthic invertivore,Benthic invertivore,Diodon holocanthus,Balloonfish,249
+NA,Benthic invertivore,Benthic invertivore,Diodon hystrix,Porcupinefish,199
+NA,Benthic invertivore,Benthic invertivore,Diplodus argenteus,Silver porgy,8
+NA,Benthic invertivore,Benthic invertivore,Doratonotus megalepis,Dwarf wrasse,2
+NA,Benthic invertivore,Benthic invertivore,Elacatinus horsti,Yellowline goby,25
+NA,Benthic invertivore,Benthic invertivore,Elacatinus macrodon,Tiger goby,11
+NA,Benthic invertivore,Benthic invertivore,Elacatinus xanthiprora,Yellowprow goby,169
+NA,Benthic invertivore,Benthic invertivore,Emblemaria pandionis,Sailfin blenny,35
+NA,Benthic invertivore,Benthic invertivore,Emblemariopsis bahamensis,Blackhead blenny,9
+NA,Benthic invertivore,Benthic invertivore,Equetus lanceolatus,Jackknife-fish,90
+NA,Benthic invertivore,Benthic invertivore,Equetus punctatus,Spotted drum,165
+NA,Benthic invertivore,Benthic invertivore,Eucinostomus argenteus,Spotfin mojarra,8
+NA,Benthic invertivore,Benthic invertivore,Eucinostomus gula,Silver jenny,1
+NA,Benthic invertivore,Benthic invertivore,Gerres cinereus,Yellowfin mojarra,79
+NA,Benthic invertivore,Benthic invertivore,Gobiosoma dilepis,Orangeside goby,6
+NA,Benthic invertivore,Benthic invertivore,Gramma loreto,Fairy basslet,5
+NA,Benthic invertivore,Benthic invertivore,Gymnothorax miliaris,Goldentail moray,86
+NA,Benthic invertivore,Benthic invertivore,Haemulon album,Margate,313
+NA,Benthic invertivore,Benthic invertivore,Haemulon aurolineatum,Tomtate,2165
+NA,Benthic invertivore,Benthic invertivore,Haemulon carbonarium,Caesar grunt,685
+NA,Benthic invertivore,Benthic invertivore,Haemulon chrysargyreum,Smallmouth grunt,423
+NA,Benthic invertivore,Benthic invertivore,Haemulon flavolineatum,French grunt,3335
+NA,Benthic invertivore,Benthic invertivore,Haemulon macrostomum,Spanish grunt,651
+NA,Benthic invertivore,Benthic invertivore,Haemulon melanurum,Cottonwick,572
+NA,Benthic invertivore,Benthic invertivore,Haemulon parra,Sailors choice,588
+NA,Benthic invertivore,Benthic invertivore,Haemulon plumierii,White grunt,6485
+NA,Benthic invertivore,Benthic invertivore,Haemulon sciurus,Bluestriped grunt,2804
+NA,Benthic invertivore,Benthic invertivore,Haemulon striatum,Striped grunt,182
+NA,Benthic invertivore,Benthic invertivore,Halichoeres bivittatus,Slippery dick,5806
+NA,Benthic invertivore,Benthic invertivore,Halichoeres caudalis,Painted wrasse,15
+NA,Benthic invertivore,Benthic invertivore,Halichoeres cyanocephalus,Yellowcheek wrasse,191
+NA,Benthic invertivore,Benthic invertivore,Halichoeres garnoti,Yellowhead wrasse,6198
+NA,Benthic invertivore,Benthic invertivore,Halichoeres maculipinna,Clown wrasse,4830
+NA,Benthic invertivore,Benthic invertivore,Halichoeres pictus,Rainbow wrasse,147
+NA,Benthic invertivore,Benthic invertivore,Halichoeres poeyi,Blackear wrasse,1127
+NA,Benthic invertivore,Benthic invertivore,Halichoeres radiatus,Puddingwife,2590
+NA,Benthic invertivore,Benthic invertivore,Hemiemblemaria simula,Wrasse blenny,150
+NA,Benthic invertivore,Benthic invertivore,Holacanthus ciliaris,Queen angelfish,3252
+NA,Benthic invertivore,Benthic invertivore,Holacanthus tricolor,Rock beauty,2426
+NA,Benthic invertivore,Benthic invertivore,Holocentrus adscensionis,Squirrelfish,1362
+NA,Benthic invertivore,Benthic invertivore,Holocentrus rufus,Longspine squirrelfish,815
+NA,Benthic invertivore,Benthic invertivore,Hypoplectrus chlorurus,Yellowtail hamlet,5
+NA,Benthic invertivore,Benthic invertivore,Hypoplectrus gemma,Blue hamlet,1820
+NA,Benthic invertivore,Benthic invertivore,Hypoplectrus gummigutta,Golden hamlet,1
+NA,Benthic invertivore,Benthic invertivore,Hypoplectrus guttavarius,Shy hamlet,19
+NA,Benthic invertivore,Benthic invertivore,Hypoplectrus hybrid,Hybrid hamlet,52
+NA,Benthic invertivore,Benthic invertivore,Hypoplectrus indigo,Indigo hamlet,89
+NA,Benthic invertivore,Benthic invertivore,Hypoplectrus puella,Barred hamlet,1610
+NA,Benthic invertivore,Benthic invertivore,Hypoplectrus tann,Tan hamlet,525
+NA,Benthic invertivore,Benthic invertivore,Inermia vittata,Boga,122
+NA,Benthic invertivore,Benthic invertivore,Labrisomus bucciferus,Puffcheek blenny,1
+NA,Benthic invertivore,Benthic invertivore,Labrisomus filamentosus,Quillfin blenny,6
+NA,Benthic invertivore,Benthic invertivore,Labrisomus gobio,Palehead blenny,2
+NA,Benthic invertivore,Benthic invertivore,Labrisomus kalisherae,Downy blenny,3
+NA,Benthic invertivore,Benthic invertivore,Labrisomus nigricinctus,Spotcheek blenny,3
+NA,Benthic invertivore,Benthic invertivore,Labrisomus nuchipinnis,Hairy blenny,19
+NA,Benthic invertivore,Benthic invertivore,Lactophrys bicaudalis,Spotted trunkfish,217
+NA,Benthic invertivore,Benthic invertivore,Lactophrys trigonus,Trunkfish,153
+NA,Benthic invertivore,Benthic invertivore,Lactophrys triqueter,Smooth trunkfish,985
+NA,Benthic invertivore,Benthic invertivore,Liopropoma eukrines,Wrasse basslet,5
+NA,Benthic invertivore,Benthic invertivore,Liopropoma mowbrayi,Cave basslet,1
+NA,Benthic invertivore,Benthic invertivore,Malacanthus plumieri,Sand tilefish,417
+NA,Benthic invertivore,Benthic invertivore,Malacoctenus aurolineatus,Goldline blenny,13
+NA,Benthic invertivore,Benthic invertivore,Malacoctenus gilli,Dusky blenny,6
+NA,Benthic invertivore,Benthic invertivore,Malacoctenus macropus,Rosy blenny,687
+NA,Benthic invertivore,Benthic invertivore,Malacoctenus triangulatus,Saddled blenny,2325
+NA,Benthic invertivore,Benthic invertivore,Malacoctenus versicolor,Barfin blenny,6
+NA,Benthic invertivore,Benthic invertivore,Microgobius carri,Seminole goby,47
+NA,Benthic invertivore,Benthic invertivore,Microgobius microlepis,Banner goby,30
+NA,Benthic invertivore,Benthic invertivore,Mulloidichthys martinicus,Yellow goatfish,750
+NA,Benthic invertivore,Benthic invertivore,Narcine bancroftii,Lesser electric ray,2
+NA,Benthic invertivore,Benthic invertivore,Neoniphon marianus,Longjaw squirrelfish,17
+NA,Benthic invertivore,Benthic invertivore,Nes longus,Orangespotted goby,7
+NA,Benthic invertivore,Benthic invertivore,Oxyurichthys stigmalophius,Spotfin goby,3
+NA,Benthic invertivore,Benthic invertivore,Pagrus pagrus,Red porgy,5
+NA,Benthic invertivore,Benthic invertivore,Paraclinus marmoratus,Marbled blenny,2
+NA,Benthic invertivore,Benthic invertivore,Paraclinus nigripinnis,Blackfin blenny,1
+NA,Benthic invertivore,Benthic invertivore,Paradiplogrammus bairdi,Lancer dragonet,30
+NA,Benthic invertivore,Benthic invertivore,Pareques acuminatus,High-hat,937
+NA,Benthic invertivore,Benthic invertivore,Pareques umbrosus,Cubbyu,35
+NA,Benthic invertivore,Benthic invertivore,Pempheris schomburgkii,Glassy sweeper,92
+NA,Benthic invertivore,Benthic invertivore,Phaeoptyx xenus,Sponge cardinalfish,10
+NA,Benthic invertivore,Benthic invertivore,Pomacanthus paru,French angelfish,2223
+NA,Benthic invertivore,Benthic invertivore,Priolepis hipoliti,Rusty goby,6
+NA,Benthic invertivore,Benthic invertivore,Prognathodes aculeatus,Longsnout butterflyfish,18
+NA,Benthic invertivore,Benthic invertivore,Pseudupeneus maculatus,Spotted goatfish,4064
+NA,Benthic invertivore,Benthic invertivore,Remora remora,Remora,41
+NA,Benthic invertivore,Benthic invertivore,Sargocentron bullisi,Deepwater squirrelfish,1
+NA,Benthic invertivore,Benthic invertivore,Sargocentron coruscum,Reef squirrelfish,46
+NA,Benthic invertivore,Benthic invertivore,Sargocentron vexillarium,Dusky squirrelfish,54
+NA,Benthic invertivore,Benthic invertivore,Scorpaenodes caribbaeus,Reef scorpionfish,9
+NA,Benthic invertivore,Benthic invertivore,Serranus annularis,Orangeback bass,13
+NA,Benthic invertivore,Benthic invertivore,Serranus phoebe,Tattler,5
+NA,Benthic invertivore,Benthic invertivore,Serranus subligarius,Belted sandfish,2
+NA,Benthic invertivore,Benthic invertivore,Serranus tigrinus,Harlequin bass,3331
+NA,Benthic invertivore,Benthic invertivore,Serranus tortugarum,Chalk bass,182
+NA,Benthic invertivore,Benthic invertivore,Sphoeroides spengleri,Bandtail puffer,349
+NA,Benthic invertivore,Benthic invertivore,Sphoeroides testudineus,Checkered puffer,5
+NA,Benthic invertivore,Benthic invertivore,Sphyrna tiburo,Bonnethead,3
+NA,Benthic invertivore,Benthic invertivore,Thalassoma bifasciatum,Bluehead,7181
+NA,Benthic invertivore,Benthic invertivore,Urobatis jamaicensis,Yellow stingray,496
+NA,Benthic invertivore,Benthic invertivore,Xyrichtys martinicensis,Rosy razorfish,269
+NA,Benthic invertivore,Benthic invertivore,Xyrichtys novacula,Pearly razorfish,83
+NA,Benthic invertivore,Benthic invertivore,Xyrichtys splendens,Green razorfish,883
+NA,Browsing herbivore,Browsing herbivore,Acanthurus bahianus,Ocean surgeon,6174
+NA,Browsing herbivore,Browsing herbivore,Acanthurus chirurgus,Doctorfish,4385
+NA,Browsing herbivore,Browsing herbivore,Acanthurus coeruleus,Blue tang,6571
+NA,Browsing herbivore,Browsing herbivore,Centropyge argi,Cherubfish,28
+NA,Browsing herbivore,Browsing herbivore,Coryphopterus lipernes,Peppermint goby,7
+NA,Browsing herbivore,Browsing herbivore,Cryptotomus roseus,Bluelip parrotfish,1172
+NA,Browsing herbivore,Browsing herbivore,Kyphosus sectatrix,Bermuda chub,1295
+NA,Browsing herbivore,Browsing herbivore,Nicholsina usta,Emerald parrotfish,181
+NA,Browsing herbivore,Browsing herbivore,Parablennius marmoreus,Seaweed blenny,1299
+NA,Cleaner,Cleaner,Elacatinus evelynae,Sharknose goby,49
+NA,Cleaner,Cleaner,Elacatinus oceanops,Neon goby,3262
+NA,Cleaner,Cleaner,Elacatinus randalli,Yellownose goby,6
+NA,Corallivore,Corallivore,Chaetodon ocellatus,Spotfin butterflyfish,4671
+NA,Corallivore,Corallivore,Elacatinus saucrum,Leopard goby,13
+NA,Higher carnivore,Higher carnivore,Acanthocybium solandri,Wahoo,1
+NA,Higher carnivore,Higher carnivore,Ahlia egmontis,Key worm eel,1
+NA,Higher carnivore,Higher carnivore,Alectis ciliaris,African pompano,20
+NA,Higher carnivore,Higher carnivore,Alphestes afer,Mutton hamlet,12
+NA,Higher carnivore,Higher carnivore,Antennarius ocellatus,Ocellated frogfish,1
+NA,Higher carnivore,Higher carnivore,Astroscopus guttatus,Northern stargazzer,1
+NA,Higher carnivore,Higher carnivore,Aulostomus maculatus,Atlantic trumpetfish,1465
+NA,Higher carnivore,Higher carnivore,Bothus lunatus,Peacock flounder,10
+NA,Higher carnivore,Higher carnivore,Bothus ocellatus,Eyed flounder,5
+NA,Higher carnivore,Higher carnivore,Brotula barbata,Atlantic bearded brotula,2
+NA,Higher carnivore,Higher carnivore,Caranx bartholomaei,Yellow jack,1009
+NA,Higher carnivore,Higher carnivore,Caranx hippos,Crevalle jack,33
+NA,Higher carnivore,Higher carnivore,Caranx latus,Horse-eye jack,45
+NA,Higher carnivore,Higher carnivore,Caranx lugubris,Black jack,5
+NA,Higher carnivore,Higher carnivore,Caranx ruber,Bar jack,3475
+NA,Higher carnivore,Higher carnivore,Carcharhinus falciformis,Silky shark,3
+NA,Higher carnivore,Higher carnivore,Carcharhinus leucas,Bull shark,8
+NA,Higher carnivore,Higher carnivore,Carcharhinus limbatus,Blacktip shark,13
+NA,Higher carnivore,Higher carnivore,Carcharhinus obscurus,Dusky shark,1
+NA,Higher carnivore,Higher carnivore,Carcharhinus perezii,Reef shark,64
+NA,Higher carnivore,Higher carnivore,Carcharhinus plumbeus,Sandbar shark,1
+NA,Higher carnivore,Higher carnivore,Centropomus undecimalis,Common snook,23
+NA,Higher carnivore,Higher carnivore,Cephalopholis cruentata,Graysby,3766
+NA,Higher carnivore,Higher carnivore,Cephalopholis fulva,Coney,405
+NA,Higher carnivore,Higher carnivore,Chaetodipterus faber,Atlantic spadefish,210
+NA,Higher carnivore,Higher carnivore,Decapterus macarellus,Mackerel scad,87
+NA,Higher carnivore,Higher carnivore,Dermatolepis inermis,Marbled grouper,3
+NA,Higher carnivore,Higher carnivore,Echeneis naucrates,Sharksucker,242
+NA,Higher carnivore,Higher carnivore,Echeneis neucratoides,Whitefin sharksucker,10
+NA,Higher carnivore,Higher carnivore,Elagatis bipinnulata,Rainbow runner,46
+NA,Higher carnivore,Higher carnivore,Elops saurus,Ladyfish,4
+NA,Higher carnivore,Higher carnivore,Enchelycore nigricans,Viper moray,2
+NA,Higher carnivore,Higher carnivore,Enneanectes boehlkei,Roughhead triplefin,11
+NA,Higher carnivore,Higher carnivore,Epinephelus adscensionis,Rock hind,610
+NA,Higher carnivore,Higher carnivore,Epinephelus flavolimbatus,Yellowedge grouper,5
+NA,Higher carnivore,Higher carnivore,Epinephelus guttatus,Red hind,377
+NA,Higher carnivore,Higher carnivore,Epinephelus niveatus,Snowy grouper,1
+NA,Higher carnivore,Higher carnivore,Euthynnus alletteratus,Little tunny,9
+NA,Higher carnivore,Higher carnivore,Fistularia tabacaria,Bluespotted cornetfish,14
+NA,Higher carnivore,Higher carnivore,Ginglymostoma cirratum,Nurse shark,301
+NA,Higher carnivore,Higher carnivore,Gymnothorax funebris,Green moray,184
+NA,Higher carnivore,Higher carnivore,Gymnothorax moringa,Spotted moray,400
+NA,Higher carnivore,Higher carnivore,Gymnothorax saxicola,Honeycomb moray,3
+NA,Higher carnivore,Higher carnivore,Gymnothorax vicinus,Purplemouth moray,22
+NA,Higher carnivore,Higher carnivore,Heteropriacanthus cruentatus,Glasseye snapper,92
+NA,Higher carnivore,Higher carnivore,Hypoplectrus nigricans,Black hamlet,689
+NA,Higher carnivore,Higher carnivore,Istiophorus platypterus,Sailfish,2
+NA,Higher carnivore,Higher carnivore,Liopropoma rubre,Peppermint basslet,10
+NA,Higher carnivore,Higher carnivore,Lutjanus apodus,Schoolmaster,1550
+NA,Higher carnivore,Higher carnivore,Lutjanus buccanella,Blackfin snapper,44
+NA,Higher carnivore,Higher carnivore,Lutjanus cyanopterus,Cubera snapper,43
+NA,Higher carnivore,Higher carnivore,Lutjanus jocu,Dog snapper,224
+NA,Higher carnivore,Higher carnivore,Lutjanus mahogoni,Mahogany snapper,363
+NA,Higher carnivore,Higher carnivore,Lutjanus synagris,Lane snapper,530
+NA,Higher carnivore,Higher carnivore,Megalops atlanticus,Tarpon,72
+NA,Higher carnivore,Higher carnivore,Muraena retifera,Reticulate moray,4
+NA,Higher carnivore,Higher carnivore,Mycteroperca acutirostris,Western comb grouper,2
+NA,Higher carnivore,Higher carnivore,Mycteroperca interstitialis,Yellowmouth grouper,222
+NA,Higher carnivore,Higher carnivore,Mycteroperca tigris,Tiger grouper,79
+NA,Higher carnivore,Higher carnivore,Negaprion brevirostris,Lemon shark,2
+NA,Higher carnivore,Higher carnivore,Oligoplites saurus,Leatherjack,2
+NA,Higher carnivore,Higher carnivore,Opistognathus macrognathus,Banded jawfish,31
+NA,Higher carnivore,Higher carnivore,Opistognathus whitehursti,Dusky jawfish,53
+NA,Higher carnivore,Higher carnivore,Paralichthys albigutta,Gulf flounder,5
+NA,Higher carnivore,Higher carnivore,Priacanthus arenatus,Bigeye,80
+NA,Higher carnivore,Higher carnivore,Prionotus ophryas,Bandtail searobin,2
+NA,Higher carnivore,Higher carnivore,Rachycentron canadum,Cobia,1
+NA,Higher carnivore,Higher carnivore,Rhomboplites aurorubens,Vermilion snapper,3
+NA,Higher carnivore,Higher carnivore,Rypticus maculatus,Whitespotted soapfish,8
+NA,Higher carnivore,Higher carnivore,Rypticus saponaceus,Greater soapfish,86
+NA,Higher carnivore,Higher carnivore,Scomberomorus cavalla,King mackerel,56
+NA,Higher carnivore,Higher carnivore,Scomberomorus maculatus,Spanish mackerel,63
+NA,Higher carnivore,Higher carnivore,Scomberomorus regalis,Cero,1058
+NA,Higher carnivore,Higher carnivore,Scorpaena plumieri,Spotted scorpionfish,146
+NA,Higher carnivore,Higher carnivore,Selene vomer,Lookdown,3
+NA,Higher carnivore,Higher carnivore,Seriola dumerili,Greater amberjack,170
+NA,Higher carnivore,Higher carnivore,Seriola rivoliana,Almaco jack,75
+NA,Higher carnivore,Higher carnivore,Serranus baldwini,Lantern bass,816
+NA,Higher carnivore,Higher carnivore,Serranus tabacarius,Tobaccofish,964
+NA,Higher carnivore,Higher carnivore,Sphyraena barracuda,Great barracuda,1538
+NA,Higher carnivore,Higher carnivore,Sphyraena guachancho,Guaguanche,4
+NA,Higher carnivore,Higher carnivore,Sphyraena picudilla,Southern sennet,9
+NA,Higher carnivore,Higher carnivore,Sphyrna lewini,Scalloped hammerhead,1
+NA,Higher carnivore,Higher carnivore,Sphyrna mokarran,Great hammerhead,5
+NA,Higher carnivore,Higher carnivore,Strongylura notata,Redfin needlefish,6
+NA,Higher carnivore,Higher carnivore,Strongylura timucu,Timucu,2
+NA,Higher carnivore,Higher carnivore,Synodus foetens,Inshore lizardfish,75
+NA,Higher carnivore,Higher carnivore,Synodus intermedius,Sand diver,345
+NA,Higher carnivore,Higher carnivore,Synodus synodus,Red lizardfish,5
+NA,Higher carnivore,Higher carnivore,Trachinotus falcatus,Permit,141
+NA,Higher carnivore,Higher carnivore,Tylosurus crocodilus,Houndfish,13
+NA,Omnivore,Omnivore,Aluterus monoceros,Unicorn filefish,3
+NA,Omnivore,Omnivore,Aluterus schoepfii,Orange filefish,82
+NA,Omnivore,Omnivore,Aluterus scriptus,Scrawled filefish,564
+NA,Omnivore,Omnivore,Cantherhines macrocerus,Whitespotted filefish,67
+NA,Omnivore,Omnivore,Cantherhines pullus,Orangespotted filefish,217
+NA,Omnivore,Omnivore,Canthigaster rostrata,Sharpnose puffer,4544
+NA,Omnivore,Omnivore,Chriodorus atherinoides,Hardhead halfbeak,6
+NA,Omnivore,Omnivore,Coryphopterus dicrus,Colon goby,906
+NA,Omnivore,Omnivore,Coryphopterus eidolon,Pallid goby,312
+NA,Omnivore,Omnivore,Coryphopterus glaucofraenum,Bridled goby,5401
+NA,Omnivore,Omnivore,Coryphopterus personatus,Masked goby,3716
+NA,Omnivore,Omnivore,Coryphopterus punctipectophorus,Spotted goby,6
+NA,Omnivore,Omnivore,Diplodus holbrookii,Spottail pinfish,22
+NA,Omnivore,Omnivore,Emmelichthyops atlanticus,Bonnetmouth,7
+NA,Omnivore,Omnivore,Gnatholepis thompsoni,Goldspot goby,1514
+NA,Omnivore,Omnivore,Hypleurochilus bermudensis,Barred blenny,57
+NA,Omnivore,Omnivore,Manta birostris,Giant manta,5
+NA,Omnivore,Omnivore,Monacanthus ciliatus,Fringed filefish,28
+NA,Omnivore,Omnivore,Monacanthus tuckeri,Slender filefish,448
+NA,Omnivore,Omnivore,Myripristis jacobus,Blackbar soldierfish,78
+NA,Omnivore,Omnivore,Scartella cristata,Molly miller,64
+NA,Omnivore,Omnivore,Stephanolepis hispidus,Planehead filefish,23
+NA,Planktivore,Planktivore,Abudefduf saxatilis,Sergeant major,2194
+NA,Planktivore,Planktivore,Anchoa lyolepis,Dusky anchovy,17
+NA,Planktivore,Planktivore,Atherinomorus stipes,Hardhead silverside,46
+NA,Planktivore,Planktivore,Chromis cyanea,Blue chromis,2654
+NA,Planktivore,Planktivore,Chromis enchrysura,Yellowtail reeffish,533
+NA,Planktivore,Planktivore,Chromis insolata,Sunshinefish,790
+NA,Planktivore,Planktivore,Chromis multilineata,Brown chromis,1667
+NA,Planktivore,Planktivore,Chromis scotti,Purple reeffish,2343
+NA,Planktivore,Planktivore,Clepticus parrae,Creole wrasse,1372
+NA,Planktivore,Planktivore,Harengula humeralis,Redear sardine,5
+NA,Planktivore,Planktivore,Heteroconger longissimus,Brown garden eel,2
+NA,Planktivore,Planktivore,Hypoatherina harringtonensis,Reef silverside,29
+NA,Planktivore,Planktivore,Melichthys niger,Black durgon,19
+NA,Planktivore,Planktivore,Odontoscion dentex,Reef croaker,282
+NA,Planktivore,Planktivore,Opistognathus aurifrons,Yellowhead jawfish,2015
+NA,Planktivore,Planktivore,Paranthias furcifer,Atlantic creolefish,23
+NA,Planktivore,Planktivore,Ptereleotris calliura,Blue dartfish,988
+NA,Planktivore,Planktivore,Ptereleotris helenae,Hovering dartfish,157
+NA,Planktivore,Planktivore,Sardinella aurita,Spanish sardine,3
+NA,Planktivore,Planktivore,Schultzea beta,School bass,10
+NA,Scraping herbivore,Scraping herbivore,Ophioblennius macclurei,Redlip blenny,172
+NA,Scraping herbivore,Scraping herbivore,Scarus coelestinus,Midnight parrotfish,1007
+NA,Scraping herbivore,Scraping herbivore,Scarus coeruleus,Blue parrotfish,1475
+NA,Scraping herbivore,Scraping herbivore,Scarus guacamaia,Rainbow parrotfish,1131
+NA,Scraping herbivore,Scraping herbivore,Scarus iseri,Striped parrotfish,6733
+NA,Scraping herbivore,Scraping herbivore,Scarus taeniopterus,Princess parrotfish,2162
+NA,Scraping herbivore,Scraping herbivore,Scarus vetula,Queen parrotfish,952
+NA,Scraping herbivore,Scraping herbivore,Sparisoma atomarium,Greenblotch parrotfish,4214
+NA,Scraping herbivore,Scraping herbivore,Sparisoma aurofrenatum,Redband parrotfish,7060
+NA,Scraping herbivore,Scraping herbivore,Sparisoma chrysopterum,Redtail parrotfish,2564
+NA,Scraping herbivore,Scraping herbivore,Sparisoma radians,Bucktooth parrotfish,950
+NA,Scraping herbivore,Scraping herbivore,Sparisoma rubripinne,Yellowtail parrotfish,2108
+NA,Scraping herbivore,Scraping herbivore,Sparisoma viride,Stoplight parrotfish,5676
+NA,NA,NA,Acanthurus sp.,NA,357
+NA,NA,NA,Aluterus sp.,NA,22
+NA,NA,NA,Astrapogon sp.,NA,15
+NA,NA,NA,blenny species,NA,122
+NA,NA,NA,Caranx sp.,NA,22
+NA,NA,NA,Coryphopterus sp.,NA,68
+NA,NA,NA,damselfish species,NA,59
+NA,NA,NA,Decapterus sp.,NA,1
+NA,NA,NA,goby species,NA,86
+NA,NA,NA,grouper-sea bass species,NA,9
+NA,NA,NA,Haemulon sp.,NA,1581
+NA,NA,NA,Holacanthus sp.,NA,648
+NA,NA,NA,Hypoplectrus sp.,NA,312
+NA,NA,NA,Jenkinsia sp.,NA,98
+NA,NA,NA,Labrisomid sp.,NA,3
+NA,NA,NA,Menidia sp.,NA,9
+NA,NA,NA,Myrichthys breviceps,NA,1
+NA,NA,NA,needlefish species,NA,1
+NA,NA,NA,Ogcocephalus sp.,NA,7
+NA,NA,NA,Opistognathus sp.,NA,8
+NA,NA,NA,porgy species,NA,97
+NA,NA,NA,puffer species,NA,2
+NA,NA,NA,razorfish species,NA,61
+NA,NA,NA,Scarus sp.,NA,112
+NA,NA,NA,Seriola sp.,NA,1
+NA,NA,NA,shark species,NA,4
+NA,NA,NA,snapper species,NA,20
+NA,NA,NA,Sparisoma sp.,NA,20
+NA,NA,NA,squirrelfish species,NA,8
+NA,NA,NA,unknown species,NA,85
