@@ -20,6 +20,7 @@ suppressPackageStartupMessages({
   library(DT)
   library(dygraphs)
   library(xts)
+  library(vegan)
 })
 ```
 
