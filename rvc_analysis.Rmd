@@ -522,8 +522,9 @@ rvc_spp = rvc_spp %>%
 # TODO: 
 
 ```
-
-# missing 
+# Missing 
+```{r missing}
+ 
 rvc_spp_missing = unique(rvc_spp$scientificName)[!unique(rvc_spp$scientificName) %in% unique(spp_traits$Latin_name)]
 # 30 of 362 rvc_spp$scientificName not in spp_traits$Latin_name
 # Myrichthys breviceps (n=1 in 2012)
@@ -537,7 +538,7 @@ spp_traits %>%
   arrange(Trophic_group, Common_name) %>%
   View()
 
-
+```
 
   
 rvc_spp %>%
