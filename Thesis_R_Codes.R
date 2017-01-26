@@ -220,10 +220,9 @@ sp_traits = traits %>%
     Maxlength     = as.numeric(as.character(Maxlength)),
     Trophic_level = as.numeric(as.character(Trophic_level)),
     # ordinal traits
-    Water_column   = ordered(
-      Water_column, levels=c("Benthic","Demersal","Pelagic site attached","Pelagic non-site attached")),
-    Complexity     = ordered(Complexity, levels=c("Low","Medium","High")),
-    Gregariousness = ordered(Gregariousness, levels=c("1","2","3"))) %>%
+    Complexity   = ordered(
+      Complexity, levels=c("Low","Medium","High")),
+      Gregariousness = ordered(Gregariousness, levels=c("1","2","3"))) %>%
   as.data.frame()
 
 # conform to: species x traits
@@ -271,8 +270,8 @@ functional_div = dbFD(
 # didn't work: Species x species distance matrix was still is not Euclidean after 'sqrt' correction. Use another correction method.
 traits_dist = gowdis(
   sp_traits %>%
-    select(Maxlength, Trophic_level, Water_column), ord="podani")
-functional_div = dbFD(traits_dist, sp_sr_ra$data_wide[[1]])
+    select(Maxlength, Trophic_level, Water_column), ord="podani",)
+functional_div = dbFD(traits_dist, sp_sr_ra$data_wide[[1]],corr = 'cailliez', calc.FRic= F, calc.FGR=F, calc.CWM=F )
 
 
 
@@ -282,7 +281,7 @@ wtf = tibble(
   match     = sp_traits == sp_sr_ra) %>%
   filter(!match)
 
-
+#Rao Q as effective number = 1/(1-RaoQ)
 
 
 #######################################################################################################

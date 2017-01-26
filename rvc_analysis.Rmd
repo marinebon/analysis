@@ -87,7 +87,58 @@ Normalizing. Using bray-curtis.
 - before/after Dry Tortugas
 
 
+## Parse the Data
 
+1. By protection (Inside and outside MPA) [protection]
+    1. Sanctuary Preservation Areas (SPA)
+        - Alligator Reef Sanctuary Preservation Area
+        - Carysfort Sanctuary Preservation Area
+        - Cheeca Rocks Sanctuary Preservation Area
+        - Coffins Patch Sanctuary Preservation Area
+        - Conch Reef Sanctuary Preservation Area
+        - Davis Reef Sanctuary Preservation Area
+        - Eastern Dry Rocks Sanctuary Preservation Area
+        - The Elbow Sanctuary Preservation Area
+        - French Reef Sanctuary Preservation Area
+        - Grecian Rocks Sanctuary Preservation Area
+        - Hen and Chickens Sanctuary Preservation Area
+        - Key Largo Dry Rocks Sanctuary Preservation Area
+        - Looe Key Sanctuary Preservation Area
+        - Molasses Reef Sanctuary Preservation Area
+        - Newfound Harbor Key Sanctuary Preservation Area
+        - Sand Key Sanctuary Preservation Area
+        - Rock Key Sanctuary Preservation Area
+        - Sombrero Key Sanctuary Preservation Area
+    1. Ecological Reserve (ER)
+        - Tortugas Ecological Reserve
+        - Western Sambo Ecological Reserve
+    1. Special Use Areas (SU)
+        - Conch Reef Research Only Area
+        - Eastern Sambo Research Only Area
+        - Looe Key Research Only Area
+        - Tennesse Reef Research Only Area
+      
+1.  By subregions [latitude,longitude]
+    1. Upper Keys 
+        - latitude  >24.95
+    1. Middle Keys
+        - latitude  >24.63 and <= 24.95
+        - longitude >-81.10 and <= -80.45
+    1. Lower Keys
+        - latitude  >24.55 and <= 24.63
+        - longitude >-82.65 and <=-81.10
+    1. Dry Tortugas 
+        - latitude  >24.55 and <= 24.75
+        - longitude >-83.5 and <=-82.65
+        
+1. By Strata name
+    1. Forereef Deep Linear Reef 
+    1. Forereef Midchannel Linear Reef
+    1. Forereef Shallow Linear Reef
+    1. High Relief Reef
+    1. Inshore Patch Reef 
+    1. Midchannel Patch Reef 
+    1. Offshore Patch Reef 
 
 ## Summarize Species Densities to Mapgrid Locations
 
@@ -577,8 +628,10 @@ rvc_spp_w = rvc_spp %>%
   - `specnumber`, 
   - `rarefy`: rarefied species richness for community ecologists. Normalizes by effort using rarefaction curves.
 ```{r Richness}  
-  #richness= rarefy(rvc_mg_wide,)
-  #rcurve= rarecurve()
+  #rarefraction curves are usful when comparing species richness with different sample sizes 
+  # x = abundance dataframe
+  # sample = number of sampling events 
+  richness = rarefy(x, sample, se = F, Margin = 1)
 ```  
 - **Evenness**: 
   - `Simpson` 1/D (1 = completely even)
@@ -592,6 +645,9 @@ rvc_spp_w = rvc_spp %>%
     rvc_mg_eff_shannon = exp(diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='shannon'))
 ```
 
+```{r Pielou's Evenness}
+J <- diversity(x, index = 'shannon')/log(specnumber(x)) #where x is abundance dataframe 
+```
 Spatial variants:
 - **alpha**
 - **gamma**
