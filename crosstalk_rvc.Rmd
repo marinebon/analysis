@@ -1,0 +1,60 @@
+---
+title: RVC Species Richness
+output: html_document
+---
+
+```{r plot richness, echo=F, message=F, warning=F}
+library(tidyverse)
+library(scales)
+library(crosstalk)
+library(leaflet)
+library(DT)
+
+rvc_grp = read_csv('data/rvc_spp_grouped.csv')
+rvc_mg  = read_csv('data/rvc_mapgrid_locations.csv')
+
+spp_rich = rvc_grp %>%
+  #group_by(year, dataset_id, mapgridnum) %>%
+  group_by(year, mapgridnum) %>%
+  summarize(
+    n_spp = length(unique(scientific_name))) %>%
+  #mutate(
+  #  date  = lubridate::as_date(sprintf('%d-01-01', year))) %>%
+  left_join(
+    rvc_mg,
+    #by=c('dataset_id'='datasetID', 'mapgridnum'='mapGridNumber')) %>%
+    by=c('mapgridnum'='mapGridNumber')) %>%
+  select(-datasetID) %>%
+  rename(lat=latitude, lon=longitude)
+
+# Wrap data frame in SharedData
+sd <- SharedData$new(spp_rich[sample(nrow(spp_rich), 100),])
+# View(sd$data())
+
+# Create a filter input
+#filter_slider(
+#   "year", "Year", sd, column=~date) # , width='90%', animate=T, timeFormat='%Y')
+filter_slider(
+  "year", "Year", sd, column=~year, width='90%', animate=T, sep='')
+#, step=2, dragRange = 2)
+  
+  #sep='')
+#with(sd$data(), max(year) - min(year))
+
+# Create a palette that maps factor levels to colors
+pal <- colorNumeric('YlOrRd', sd$data()$n_spp) # 'Spectral'
+
+# Use SharedData like a dataframe with Crosstalk-enabled widgets
+bscols(
+  leaflet(sd) %>% 
+    addProviderTiles('Esri.OceanBasemap') %>%
+    addCircleMarkers(
+      radius = ~rescale(n_spp, to=c(0.1, 10)),
+      color = ~pal(n_spp),
+      stroke = FALSE, fillOpacity = 0.5) %>%
+    addLegend("topleft", pal = pal, values = sd$data()$n_spp,
+      title = "n spp", opacity = 1),
+    #addMarkers(),
+  datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
+    options=list(deferRender=TRUE, scrollY=300, scroller=TRUE)))
+```
