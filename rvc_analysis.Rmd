@@ -515,11 +515,43 @@ rvc_sum %>%
 
 rvc_spp = rvc_spp %>%
   filter(!is.na(group))
+
+write_csv(rvc_spp, 'data/rvc_spp_grouped.csv')
 ```  
 
 
-```{r}
-# TODO: 
+```{r plot richness}
+library(tidyverse)
+library(leaflet)
+library(DT)
+library(crosstalk)
+
+rvc_spp = read_csv('data/rvc_spp_grouped.csv')
+rvc_mg  = read_csv('data/rvc_mg.csv')
+
+spp_rich = rvc_spp %>%
+  group_by(year, dataset_id, mapgridnum) %>%
+  summarize(
+    n_spp = length(unique(scientific_name))) %>%
+  left_join(
+    rvc_mg,
+    by=c('dataset_id'='datasetID', 'mapgridnum'='mapGridNumber')) %>%
+  rename(lat=latitude, lon=longitude)
+
+
+# Wrap data frame in SharedData
+sd <- SharedData$new(spp_rich[sample(nrow(spp_rich), 100),])
+
+# Create a filter input
+filter_slider(
+  "year", "Year", sd, column=~year, step=1, width=with(sd$data(), max(year) - min(year)))
+
+# Use SharedData like a dataframe with Crosstalk-enabled widgets
+bscols(
+  leaflet(sd) %>% addTiles() %>% addMarkers(lat=~lat, lng=~lon),
+  datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
+    options=list(deferRender=TRUE, scrollY=300, scroller=TRUE))
+)
 
 ```
 # Missing 
