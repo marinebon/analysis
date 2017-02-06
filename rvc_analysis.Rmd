@@ -91,45 +91,45 @@ Normalizing. Using bray-curtis.
 
 1. By protection (Inside and outside MPA) [protection]
     1. Sanctuary Preservation Areas (SPA)
-        - Alligator Reef Sanctuary Preservation Area
-        - Carysfort Sanctuary Preservation Area
-        - Cheeca Rocks Sanctuary Preservation Area
-        - Coffins Patch Sanctuary Preservation Area
-        - Conch Reef Sanctuary Preservation Area
-        - Davis Reef Sanctuary Preservation Area
-        - Eastern Dry Rocks Sanctuary Preservation Area
-        - The Elbow Sanctuary Preservation Area
-        - French Reef Sanctuary Preservation Area
-        - Grecian Rocks Sanctuary Preservation Area
-        - Hen and Chickens Sanctuary Preservation Area
-        - Key Largo Dry Rocks Sanctuary Preservation Area
-        - Looe Key Sanctuary Preservation Area
-        - Molasses Reef Sanctuary Preservation Area
-        - Newfound Harbor Key Sanctuary Preservation Area
-        - Sand Key Sanctuary Preservation Area
-        - Rock Key Sanctuary Preservation Area
-        - Sombrero Key Sanctuary Preservation Area
+        + Alligator Reef Sanctuary Preservation             Area
+        + Carysfort Sanctuary Preservation Area
+        + Cheeca Rocks Sanctuary Preservation Area
+        + Coffins Patch Sanctuary Preservation              Area
+        + Conch Reef Sanctuary Preservation Area
+        + Davis Reef Sanctuary Preservation Area
+        + Eastern Dry Rocks Sanctuary Preservation           Area
+        + The Elbow Sanctuary Preservation Area
+        + French Reef Sanctuary Preservation Area
+        + Grecian Rocks Sanctuary Preservation              Area
+        + Hen and Chickens Sanctuary Preservation           Area
+        + Key Largo Dry Rocks Sanctuary                     Preservation Area
+        + Looe Key Sanctuary Preservation Area
+        + Molasses Reef Sanctuary Preservation              Area
+        + Newfound Harbor Key Sanctuary                     Preservation Area
+        + Sand Key Sanctuary Preservation Area
+        + Rock Key Sanctuary Preservation Area
+        + Sombrero Key Sanctuary Preservation Area
     1. Ecological Reserve (ER)
-        - Tortugas Ecological Reserve
-        - Western Sambo Ecological Reserve
+        + Tortugas Ecological Reserve
+        + Western Sambo Ecological Reserve
     1. Special Use Areas (SU)
-        - Conch Reef Research Only Area
-        - Eastern Sambo Research Only Area
-        - Looe Key Research Only Area
-        - Tennesse Reef Research Only Area
+        + Conch Reef Research Only Area
+        + Eastern Sambo Research Only Area
+        + Looe Key Research Only Area
+        + Tennesse Reef Research Only Area
       
 1.  By subregions [latitude,longitude]
     1. Upper Keys 
-        - latitude  >24.95
+        + latitude  >24.95
     1. Middle Keys
-        - latitude  >24.63 and <= 24.95
-        - longitude >-81.10 and <= -80.45
+        + latitude  >24.63 and <= 24.95
+        + longitude >-81.10 and <= -80.45
     1. Lower Keys
-        - latitude  >24.55 and <= 24.63
-        - longitude >-82.65 and <=-81.10
+        + latitude  >24.55 and <= 24.63
+        + longitude >-82.65 and <=-81.10
     1. Dry Tortugas 
-        - latitude  >24.55 and <= 24.75
-        - longitude >-83.5 and <=-82.65
+        + latitude  >24.55 and <= 24.75
+        + longitude >-83.5 and <=-82.65
         
 1. By Strata name
     1. Forereef Deep Linear Reef 
@@ -540,14 +540,9 @@ spp_traits %>%
 
 ```
 
-  
 rvc_spp %>%
   #filter(scientificName=='Panulirus argus')   # lobster (n=0)
   filter(scientificName=='Diadema antillarum') # urchin (n=0)
-
-```
-
-
 
 ## Normalize
 
@@ -560,7 +555,7 @@ n_s / max(N_S) \\
 $$
 
 ```{r wide}
-# vegan prep
+#vegan prep
 rvc_tbl = rvc_spp %>%
   nest(-year) %>%
   mutate(
@@ -568,7 +563,7 @@ rvc_tbl = rvc_spp %>%
 ```
 
 ```{r normalize}
-# feed site (rows) x species (columns)
+#feed site (rows) x species (columns)
 rvc_tbl = rvc_tbl %>%
   mutate(
     norm = map(data_wide, ~ vegdist(
@@ -576,19 +571,19 @@ rvc_tbl = rvc_tbl %>%
       method="bray", binary=F, diag=F, upper=F)))
  
 #norm = vegdist(rvc_tbl$data_wide[[1]] %>% select(-datasetID, -mapGridNumber),  method="bray", binary=F, diag=F, upper=F)                  
-
 spread(data=.x, scientificName, q_mean, fill=0)
 
 ```
 
-```{r}
-# summarize by species
+```{r sum}
+#summarize by species
 rvc_spp_w = rvc_spp %>%
    group_by(scientificName, year) %>%
    summarise(
      mg_q_var  = var(q_mean),
      mg_q_mean = mean(q_mean)) %>%
    ungroup()
+   
 ```
 
 ## Biodiversity Metrics
@@ -615,7 +610,8 @@ rvc_spp_w = rvc_spp %>%
 ```
 
 ```{r Pielou's Evenness}
-J <- diversity(x, index = 'shannon')/log(specnumber(x)) #where x is abundance dataframe 
+#where x is abundance dataframe 
+J <- diversity(x, index = 'shannon')/log(specnumber(x)) 
 ```
 Spatial variants:
 - **alpha**
@@ -639,7 +635,7 @@ Others:
 #compute Gowers distance correcting with Podani for ordered traits 
 traits.dist=gowdis(traits,ord="podani")
 
-#Because values of Rao's Q can be maximized when fewer than the max number of functional types are present unless distances are ultramtetric ---- Clustering method to produce ultrametric dendrogram 
+#Use clustering method to produce ultrametric dendrogramBecause values of Rao's Q can be maximized when fewer than the max number of functional types are present unless distances are ultramtetric 
 
 #to account for sensitivity in clustering use multiple algorithms  (Mouchet et al., 2008) 
 tree_methods = c("single","complete","average","mcquitty","ward")
@@ -654,16 +650,16 @@ trees.ultra=lapply(trees,function(i) cl_ultrametric(as.hclust(i)))
 par(mfrow=c(3,2))
 for (i in 1:length(trees.ultra)) {plot(trees.ultra[[i]])}
 
-#Build the consensus tree (Mouchet et al 2008 Oikos)
-ensemble.trees=cl_ensemble(list=trees)
+#Build the consensus tree (Mouchet et al 2008 Oikos) from package clue 
+ensemble.trees=cl_ensemble(list=trees) #list of clusterings 
 class(ensemble.trees)
-consensus.tree=cl_consensus(ensemble.trees) 
+consensus.tree=cl_consensus(ensemble.trees) #synthesizes the information in the elements of a cluster ensemble into a single clustering 
 #plot(consensus.tree)
 
 #Calculate dissimilarity values for each tree using 2-norm (Merigot et al 2010 Ecology) to determine which tree best preserves orignial distances
 all.trees=c(trees.ultra,consensus.tree[1])
 names(all.trees)=c(tree_methods,"consensus")
-(trees.dissim=lapply(all.trees,function(i) cl_dissimilarity(i,traits.dist,method="spectral")))
+(trees.dissim=lapply(all.trees,function(i) cl_dissimilarity(i,traits.dist,method="spectral"))) #spectral norm (2-norm) of the differences of the ultrametrics
 
 #Identify best tree and isolate
 trees.dissim2=do.call(rbind,trees.dissim)
@@ -676,10 +672,11 @@ cl_dissimilarity(func.dist,traits.dist,method="spectral")
 
 #Scale by the max value so that all values are between 0-1 (clue package)
 func.dist=func.dist/max(func.dist)
+
 #Plot the best tree
-# par(mfrow=c(1,1))
-# par(mar=c(3,1,0,16))
-# plot(func.dist,horiz=TRUE)
+par(mfrow=c(1,1))
+par(mar=c(3,1,0,16))
+plot(func.dist,horiz=TRUE)
 #Save plot: 10" x 15"
 
 #Write newick tree
@@ -687,7 +684,6 @@ write.tree(as.phylo(as.hclust(func.dist)),"Functional dendrogram")
 
 #calculate effective Rao's Q 
 #Calculate alpha diversity
-# TODO: change below inputs to just relative abundance 
 alphadiv.list=lapply(list(catch_abund,catch_biomass,catch_pres.abs),
  function(i) {
    #Extract community matrix from object in list
@@ -695,9 +691,24 @@ alphadiv.list=lapply(list(catch_abund,catch_biomass,catch_pres.abs),
    rownames(mat)=mat[,1]; mat=mat[,-1]
    #Calculate relative values for community matrix
    rel.mat=mat/apply(mat,1,sum)
+   #Compute species diversity
+   species.dist=matrix(1,ncol(mat),ncol(mat))-diag(rep(1,ncol(mat))) 
+   species.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% species.dist %*% x))
+   #Compute evenness (as in Jost 2010 Diversity)
+   evenness=log(species.div)/log(rowSums(mat>0))
+   #Ensure that all evenness calculations are not >1 (bug)
+   evenness[evenness>1]=1
    #Compute functional diversity 
    func.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% as.matrix(func.dist) %*% x))
- }
+   #Compute phylogenetic diversity
+   phylo.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% as.matrix(phylo.dist) %*% x))
+   #Compute taxonomic diversity
+   taxo.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% as.matrix(taxo.dist) %*% x))
+   #Bind all to the original dataframe
+   cbind(i,evenness,species.div,func.div,phylo.div,taxo.div) } ) 
+names(alphadiv.list)=c("abund","biomass","pres.abs")
+
+ 
 ```
 - **phylogenetic diversity**
 
