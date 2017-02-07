@@ -529,6 +529,11 @@ n_s / max(N_S) \\
 $$
 
 ```{r wide}
+rvc_spp = read_csv(rvc_spp_csv) %>%
+  select(
+    year, dataset_id = datasetID, 
+    mapgridnum = mapGridNumber, scientific_name = scientificName, q_mean)
+
 #vegan prep
 rvc_tbl = rvc_spp %>%
   nest(-year) %>%
@@ -536,17 +541,20 @@ rvc_tbl = rvc_spp %>%
     data_wide = map(data, ~ spread(data=.x, scientific_name, q_mean, fill=0)))
 ```
 
-```{r normalize}
+```{r normalize, eval=F}
 #feed site (rows) x species (columns)
+
+vegdist_df <- function(df){
+  vegdist(df %>% select(-dataset_id, -mapgridnum), 
+      method="bray", binary=F, diag=F, upper=F)
+}
+
 rvc_tbl = rvc_tbl %>%
   mutate(
-    norm = map(data_wide, ~ vegdist(
-      data = .x %>% select(-datasetID, -mapGridNumber), 
-      method="bray", binary=F, diag=F, upper=F)))
- 
-#norm = vegdist(rvc_tbl$data_wide[[1]] %>% select(-datasetID, -mapGridNumber),  method="bray", binary=F, diag=F, upper=F)                  
-spread(data=.x, scientific_name, q_mean, fill=0)
-
+    veg_bray   = map(data_wide, vegdist_df),
+    veg_bray_m = map(veg_bray, as.matrix))
+#rvc_tbl$data_wide[[1]] (mapgridnum x species)
+#spread(data=.x, scientific_name, q_mean, fill=0)
 ```
 
 ```{r sum}
@@ -566,10 +574,33 @@ rvc_spp_w = rvc_spp %>%
   - `specnumber`, 
   - `rarefy`: rarefied species richness for community ecologists. Normalizes by effort using rarefaction curves.
 ```{r Richness}  
-  #rarefraction curves are usful when comparing species richness with different sample sizes 
-  # x = abundance dataframe
-  # sample = number of sampling events 
-  richness = rarefy(x, sample, se = F, Margin = 1)
+#rarefraction curves are usful when comparing species richness with different sample sizes 
+# x = abundance dataframe
+# sample = number of sampling events 
+rvc_tbl = rvc_tbl %>%
+  mutate(
+    specnum  = map(data_wide, function(x) select(x, -dataset_id, -mapgridnum) %>% specnumber))
+    specnum  = map(data_wide, function(x) select(x, -dataset_id, -mapgridnum) %>% specnumber))
+
+rarefy(rvc_tbl$data_wide[[1]] %>% select(-dataset_id, -mapgridnum), se = F, Margin = 1)
+
+# 
+#     richness = map(veg_bray, rarefy(x, sample, se = F, Margin = 1))
+# 
+#     rvc_tbl$
+#     
+# dim(rvc_tbl$data_wide[[1]] %>% select(-dataset_id, -mapgridnum))
+# v = specnumber(rvc_tbl$data_wide[[1]] %>% select(-dataset_id, -mapgridnum))
+# length(v)
+# 
+# dim(BCI)
+# data(BCI) # sites x species
+# S <- specnumber(BCI) # observed number of species
+# length(S)
+# (raremax <- min(rowSums(BCI)))
+# Srare <- rarefy(BCI, raremax)
+#     
+# rarefy(rvc_tbl$veg_bray_m, se = F, Margin = 1)
 ```  
  - **Evenness**: 
   - `Simpson` 1/D (1 = completely even)
