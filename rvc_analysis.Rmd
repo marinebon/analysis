@@ -91,21 +91,21 @@ Normalizing. Using bray-curtis.
 
 1. By protection (Inside and outside MPA) [protection]
     1. Sanctuary Preservation Areas (SPA)
-        + Alligator Reef Sanctuary Preservation             Area
+        + Alligator Reef Sanctuary Preservation Area
         + Carysfort Sanctuary Preservation Area
         + Cheeca Rocks Sanctuary Preservation Area
-        + Coffins Patch Sanctuary Preservation              Area
+        + Coffins Patch Sanctuary Preservation Area
         + Conch Reef Sanctuary Preservation Area
         + Davis Reef Sanctuary Preservation Area
-        + Eastern Dry Rocks Sanctuary Preservation           Area
+        + Eastern Dry Rocks Sanctuary Preservation Area
         + The Elbow Sanctuary Preservation Area
         + French Reef Sanctuary Preservation Area
-        + Grecian Rocks Sanctuary Preservation              Area
-        + Hen and Chickens Sanctuary Preservation           Area
-        + Key Largo Dry Rocks Sanctuary                     Preservation Area
+        + Grecian Rocks Sanctuary Preservation Area
+        + Hen and Chickens Sanctuary Preservation Area
+        + Key Largo Dry Rocks Sanctuary Preservation Area
         + Looe Key Sanctuary Preservation Area
-        + Molasses Reef Sanctuary Preservation              Area
-        + Newfound Harbor Key Sanctuary                     Preservation Area
+        + Molasses Reef Sanctuary Preservation Area
+        + Newfound Harbor Key Sanctuary Preservation Area
         + Sand Key Sanctuary Preservation Area
         + Rock Key Sanctuary Preservation Area
         + Sombrero Key Sanctuary Preservation Area
@@ -629,9 +629,6 @@ rvc_spp_w = rvc_spp %>%
   # sample = number of sampling events 
   richness = rarefy(x, sample, se = F, Margin = 1)
 ```  
-- **Evenness**: 
-  - `Simpson` 1/D (1 = completely even)
-  - `Shannon`, effective: rewards higher species linearly (vs just Shannon)
 
 ```{r Effective Simpson}
   rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='simpson'))
@@ -640,7 +637,9 @@ rvc_spp_w = rvc_spp %>%
 ```{r Effective Shannon}
     rvc_mg_eff_shannon = exp(diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='shannon'))
 ```
-
+ - **Evenness**: 
+  - `Simpson` 1/D (1 = completely even)
+  - `Shannon`, effective: rewards higher species linearly (vs just Shannon)
 ```{r Pielou's Evenness}
 #where x is abundance dataframe 
 J <- diversity(x, index = 'shannon')/log(specnumber(x)) 
@@ -745,6 +744,7 @@ names(alphadiv.list)=c("abund","biomass","pres.abs")
 - **phylogenetic diversity**
 
 ## Correlation
+
 
 ```{r correlation}
 
