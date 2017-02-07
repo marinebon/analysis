@@ -86,60 +86,6 @@ Normalizing. Using bray-curtis.
 [Jerald Ault - Google Scholar Citations](https://scholar.google.com/citations?hl=en&user=cljlXUIAAAAJ&view_op=list_works&sortby=pubdate): fisheries modeler working on size classes inside/outside MPAs
 - before/after Dry Tortugas
 
-
-## Parse the Data
-
-1. By protection (Inside and outside MPA) [protection]
-    1. Sanctuary Preservation Areas (SPA)
-        + Alligator Reef Sanctuary Preservation Area
-        + Carysfort Sanctuary Preservation Area
-        + Cheeca Rocks Sanctuary Preservation Area
-        + Coffins Patch Sanctuary Preservation Area
-        + Conch Reef Sanctuary Preservation Area
-        + Davis Reef Sanctuary Preservation Area
-        + Eastern Dry Rocks Sanctuary Preservation Area
-        + The Elbow Sanctuary Preservation Area
-        + French Reef Sanctuary Preservation Area
-        + Grecian Rocks Sanctuary Preservation Area
-        + Hen and Chickens Sanctuary Preservation Area
-        + Key Largo Dry Rocks Sanctuary Preservation Area
-        + Looe Key Sanctuary Preservation Area
-        + Molasses Reef Sanctuary Preservation Area
-        + Newfound Harbor Key Sanctuary Preservation Area
-        + Sand Key Sanctuary Preservation Area
-        + Rock Key Sanctuary Preservation Area
-        + Sombrero Key Sanctuary Preservation Area
-    1. Ecological Reserve (ER)
-        + Tortugas Ecological Reserve
-        + Western Sambo Ecological Reserve
-    1. Special Use Areas (SU)
-        + Conch Reef Research Only Area
-        + Eastern Sambo Research Only Area
-        + Looe Key Research Only Area
-        + Tennesse Reef Research Only Area
-      
-1.  By subregions [latitude,longitude]
-    1. Upper Keys 
-        + latitude  >24.95
-    1. Middle Keys
-        + latitude  >24.63 and <= 24.95
-        + longitude >-81.10 and <= -80.45
-    1. Lower Keys
-        + latitude  >24.55 and <= 24.63
-        + longitude >-82.65 and <=-81.10
-    1. Dry Tortugas 
-        + latitude  >24.55 and <= 24.75
-        + longitude >-83.5 and <=-82.65
-        
-1. By Strata name
-    1. Forereef Deep Linear Reef 
-    1. Forereef Midchannel Linear Reef
-    1. Forereef Shallow Linear Reef
-    1. High Relief Reef
-    1. Inshore Patch Reef 
-    1. Midchannel Patch Reef 
-    1. Offshore Patch Reef 
-
 ## Summarize Species Densities to Mapgrid Locations
 
 - vignette: [Diversity analysis in vegan](https://cran.r-project.org/web/packages/vegan/vignettes/diversity-vegan.pdf)
@@ -467,7 +413,7 @@ names(spp_traits) = names(spp_traits) %>%
 # read in species roles
 spp_roles = read_excel(
   'data/Habitat_Indicator_Dataset_Metric_Hepner.xlsx',
-  'Species Ecological Role')
+  'Species Ecological Role') #add to Documents/github/analysis/
 
 # remove white space on values and fix column names
 spp_roles = apply(spp_roles, 2, function(x) str_trim(x)) %>%
@@ -530,7 +476,7 @@ rvc_spp = read_csv('data/rvc_spp_grouped.csv')
 rvc_mg  = read_csv('data/rvc_mg.csv')
 
 spp_rich = rvc_spp %>%
-  group_by(year, dataset_id, mapgridnum) %>%
+  group_by(year,dataset_id, mapgridnum) %>%
   summarize(
     n_spp = length(unique(scientific_name))) %>%
   left_join(
@@ -571,10 +517,6 @@ spp_traits %>%
   View()
 
 ```
-
-rvc_spp %>%
-  #filter(scientificName=='Panulirus argus')   # lobster (n=0)
-  filter(scientificName=='Diadema antillarum') # urchin (n=0)
 
 ## Normalize
 
@@ -755,6 +697,52 @@ do.call(rbind,lapply(list("richness","evenness","simpson","shannon", "func.div")
 
 ```
 
+## Filter by MPA 
+
+1. By protection (Inside and outside MPA) [protection]
+    1. Sanctuary Preservation Areas (SPA)
+        + Alligator Reef Sanctuary Preservation Area
+        + Carysfort Sanctuary Preservation Area
+        + Cheeca Rocks Sanctuary Preservation Area
+        + Coffins Patch Sanctuary Preservation Area
+        + Conch Reef Sanctuary Preservation Area
+        + Davis Reef Sanctuary Preservation Area
+        + Eastern Dry Rocks Sanctuary Preservation Area
+        + The Elbow Sanctuary Preservation Area
+        + French Reef Sanctuary Preservation Area
+        + Grecian Rocks Sanctuary Preservation Area
+        + Hen and Chickens Sanctuary Preservation Area
+        + Key Largo Dry Rocks Sanctuary Preservation Area
+        + Looe Key Sanctuary Preservation Area
+        + Molasses Reef Sanctuary Preservation Area
+        + Newfound Harbor Key Sanctuary Preservation Area
+        + Sand Key Sanctuary Preservation Area
+        + Rock Key Sanctuary Preservation Area
+        + Sombrero Key Sanctuary Preservation Area
+    1. Ecological Reserve (ER)
+        + Tortugas Ecological Reserve
+        + Western Sambo Ecological Reserve
+    1. Special Use Areas (SU)
+        + Conch Reef Research Only Area
+        + Eastern Sambo Research Only Area
+        + Looe Key Research Only Area
+        + Tennesse Reef Research Only Area
+        
+## Filter by Subregion    
+
+1.  By subregions [latitude,longitude]
+    1. Upper Keys 
+        + latitude  >24.95
+    1. Middle Keys
+        + latitude  >24.63 and <= 24.95
+        + longitude >-81.10 and <= -80.45
+    1. Lower Keys
+        + latitude  >24.55 and <= 24.63
+        + longitude >-82.65 and <=-81.10
+    1. Dry Tortugas 
+        + latitude  >24.55 and <= 24.75
+        + longitude >-83.5 and <=-82.65
+        
 BB TODO:
 - Translate [Lab 8. Communities](http://benbestphd.com/landscape-ecology-labs/lab8.html) for calculating Bray-Curtis dissimilarity, and applying NMDS & clustering with environmental gradients (gam contour plot). 
 
@@ -859,11 +847,9 @@ Existing values:
 
 So we can evaluate the relationship between these predictors for basic understanding. But to predict elsewhere, we need these data for locations outside survey dataset.
 
-
 ### Extract and Predict with Outside Values
 
 - BB asked Maria for seascapes data to extract and predict with this dataset (2017-01-19)
-
 
 ## Background
 
@@ -872,8 +858,6 @@ So we can evaluate the relationship between these predictors for basic understan
 - **SPA** (sanctuary preservation area) for dive spots, small
 
 ```{r functional diversity, eval=F} 
-
-
 
 ## readr::read_csv() # keeps strings as character, vs evil factors. yay! from readr
 # utils::read.csv() # evil! base read of csv
