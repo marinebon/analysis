@@ -340,7 +340,7 @@ if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
 
 Fetched data had the following nested elements:
 
-- count (`quantificationValue`) of species (`scientificName`)
+- count (`quantificationValue`) of species (`scientific_name`)
 - species size classes (`observedMeanLengthInCm`)
 - secondary station number (`station_nr`)
 - primary sampling unit (`primarySamplingUnit`)
@@ -413,7 +413,7 @@ names(spp_traits) = names(spp_traits) %>%
 # read in species roles
 spp_roles = read_excel(
   'data/Habitat_Indicator_Dataset_Metric_Hepner.xlsx',
-  'Species Ecological Role') #add to Documents/github/analysis/
+  'Species Ecological Role') 
 
 # remove white space on values and fix column names
 spp_roles = apply(spp_roles, 2, function(x) str_trim(x)) %>%
@@ -473,7 +473,7 @@ library(DT)
 library(crosstalk)
 
 rvc_spp = read_csv('data/rvc_spp_grouped.csv')
-rvc_mg  = read_csv('data/rvc_mg.csv')
+rvc_mg  = read_csv('data/rvc_mapgrid_locations.csv')
 
 spp_rich = rvc_spp %>%
   group_by(year,dataset_id, mapgridnum) %>%
@@ -493,26 +493,26 @@ filter_slider(
   "year", "Year", sd, column=~year, step=1, width=with(sd$data(), max(year) - min(year)))
 
 # Use SharedData like a dataframe with Crosstalk-enabled widgets
-bscols(
-  leaflet(sd) %>% addTiles() %>% addMarkers(lat=~lat, lng=~lon),
-  datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
-    options=list(deferRender=TRUE, scrollY=300, scroller=TRUE))
-)
+# bscols(
+#   leaflet(sd) %>% addTiles() %>% addMarkers(lat=~lat, lng=~lon),
+#   datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
+#     options=list(deferRender=TRUE, scrollY=300, scroller=TRUE))
+# )
 
 ```
 # Missing 
-```{r missing}
+```{r missing, eval=F}
  
-rvc_spp_missing = unique(rvc_spp$scientificName)[!unique(rvc_spp$scientificName) %in% unique(spp_traits$Latin_name)]
-# 30 of 362 rvc_spp$scientificName not in spp_traits$Latin_name
+rvc_spp_missing = unique(rvc_spp$scientific_name)[!unique(rvc_spp$scientific_namee) %in% unique(spp_traits$latin_name)]
+# 30 of 362 rvc_spp$scientific_name not in spp_traits$latin_name
 # Myrichthys breviceps (n=1 in 2012)
 # we can average numeric traits: Maxlength, Trophic_level, Gregariousness
 #   vs categorical: Trophic_group	Water_column	Diel_activity	Substrate_type	Complexity
 
-spp_traits_missing = unique(spp_traits$Latin_name)[!unique(spp_traits$Latin_name) %in% unique(rvc_spp$scientificName)]
+spp_traits_missing = unique(spp_traits$latin_name)[!unique(spp_traits$latin_name) %in% unique(rvc_spp$scientific_name)]
 # eg missing red snapper (Lutjanus campechanus)
 spp_traits %>%
-  filter(Latin_name %in% spp_traits_missing) %>%
+  filter(latin_name %in% spp_traits_missing) %>%
   arrange(Trophic_group, Common_name) %>%
   View()
 
@@ -533,7 +533,7 @@ $$
 rvc_tbl = rvc_spp %>%
   nest(-year) %>%
   mutate(
-    data_wide = map(data, ~ spread(data=.x, scientificName, q_mean, fill=0)))
+    data_wide = map(data, ~ spread(data=.x, scientific_name, q_mean, fill=0)))
 ```
 
 ```{r normalize}
@@ -545,14 +545,14 @@ rvc_tbl = rvc_tbl %>%
       method="bray", binary=F, diag=F, upper=F)))
  
 #norm = vegdist(rvc_tbl$data_wide[[1]] %>% select(-datasetID, -mapGridNumber),  method="bray", binary=F, diag=F, upper=F)                  
-spread(data=.x, scientificName, q_mean, fill=0)
+spread(data=.x, scientific_name, q_mean, fill=0)
 
 ```
 
 ```{r sum}
 #summarize by species
 rvc_spp_w = rvc_spp %>%
-   group_by(scientificName, year) %>%
+   group_by(scientific_name, year) %>%
    summarise(
      mg_q_var  = var(q_mean),
      mg_q_mean = mean(q_mean)) %>%
@@ -581,7 +581,7 @@ rvc_spp_w = rvc_spp %>%
     rvc_mg_eff_shannon = exp(diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='shannon'))
 ```
 
-```{r Pielou's Evenness}
+```{r Pielous Evenness}
 #where x is abundance dataframe 
 J <- diversity(x, index = 'shannon')/log(specnumber(x)) 
 ```
