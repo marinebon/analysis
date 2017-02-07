@@ -610,7 +610,11 @@ rarefy(x %>% select(-dataset_id, -mapgridnum), x$n_stations, se = F, Margin = 1)
  - **Evenness**: 
   - `Simpson` 1/D (1 = completely even)
 ```{r Effective Simpson}
-  rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='simpson'))
+  rvc_tbl = rvc_tbl %>%
+  mutate(
+    rvc_mg_eff_simpson  = map(1/(1-diversity(data_wide, function(x), select(x, -dataset_id, -mapgridnum), index='simpson')) %>% eff_simpson)
+
+#rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='simpson'))
 ``` 
   - `Shannon`, effective: rewards higher species linearly (vs just Shannon)
 ```{r Effective Shannon}
