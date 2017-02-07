@@ -380,13 +380,33 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
       year = year(eventDate)) %>%
     group_by(year, datasetID,  mapGridNumber, scientificName) %>%
     summarize(
-      n_stations = sum(n_stations),
-      q_mean = mean(q))
+      q_mean = mean(q)) %>%
+    ungroup()
+  
+  # add sampling effort per datasetID (with year) and mapGridNumber by n_stations (secondary sampling units)
+  rvc_spp = rvc_spp %>%
+    left_join(
+      rvc_psu %>%
+        group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, n_stations) %>%
+        summarize(n_spp = n()) %>%
+        group_by(datasetID, mapGridNumber) %>%
+        summarize(
+          n_stations = sum(n_stations)), 
+      by = c('datasetID', 'mapGridNumber'))
+      
+  # # check n_stations (secondary) in primary in mapgrid
+  # filter(rvc_spp, n_stations == 19) %>% distinct(mapgridnum) # 19 n_stations in 1999: 5787324, 8270424
+  # rvc %>%
+  #   filter(
+  #     mapGridNumber == 5787324, 
+  #     year(eventDate) == 1999) %>%
+  #   group_by(primarySamplingUnit, station_nr) %>%
+  #   summarize(
+  #     n = n())
   
   # write to csv
   write_csv(rvc_mg, rvc_mg_csv)
   write_csv(rvc_spp, rvc_spp_csv)
-  
 }
 
 # read in data
@@ -537,12 +557,15 @@ rvc_spp = read_csv(rvc_spp_csv) %>%
     mapgridnum = mapGridNumber, scientific_name = scientificName, 
     q_mean, n_stations)
 
+nstations_df = function(x){
+  group_by(x, dataset_id, mapgridnum) %>% summarize(n_stations = first(n_stations))
+}
+
 #vegan prep
 rvc_tbl = rvc_spp %>%
   nest(-year) %>%
   mutate(
-    data_wide    = map(data, ~ spread(data=.x, scientific_name, q_mean, fill=0)),
-    mg_nstations = )
+    data_wide  = map(data, ~ spread(data=.x, scientific_name, q_mean, fill=0)))
 ```
 
 ```{r normalize, eval=F}
@@ -576,18 +599,60 @@ rvc_spp_w = rvc_spp %>%
 - **Richness**
   - `specnumber`, 
   - `rarefy`: rarefied species richness for community ecologists. Normalizes by effort using rarefaction curves.
+  
+```{r examples rarefy specaccum}
+# rarefy
+data(BCI)
+S <- specnumber(BCI) # observed number of species
+(raremax <- min(rowSums(BCI)))
+Srare <- rarefy(BCI, raremax)
+plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
+abline(0, 1)
+rarecurve(BCI, step = 20, sample = raremax, col = "blue", cex = 0.6)
+
+# specaccum
+data(BCI)
+sp1 <- specaccum(BCI)
+sp2 <- specaccum(BCI, "random")
+sp2
+summary(sp2)
+plot(sp1, ci.type="poly", col="blue", lwd=2, ci.lty=0, ci.col="lightblue")
+boxplot(sp2, col="yellow", add=TRUE, pch="+")
+## Fit Lomolino model to the exact accumulation
+mod1 <- fitspecaccum(sp1, "lomolino")
+coef(mod1)
+fitted(mod1)
+plot(sp1)
+## Add Lomolino model using argument 'add'
+plot(mod1, add = TRUE, col=2, lwd=2)
+## Fit Arrhenius models to all random accumulations
+mods <- fitspecaccum(sp2, "arrh")
+plot(mods, col="hotpink")
+boxplot(sp2, col = "yellow", border = "blue", lty=1, cex=0.3, add= TRUE)
+## Use nls() methods to the list of models
+sapply(mods$models, AIC)
+```
+
+  
 ```{r Richness}  
 #rarefraction curves are usful when comparing species richness with different sample sizes 
 # x = abundance dataframe
 # sample = number of sampling events 
+
+rarefy_df = function(x){
+  m = select(x, -dataset_id, -mapgridnum, -n_stations) %>% as.matrix()
+  storage.mode(m) = 'integer'
+  e = x %>% .$n_stations
+  rarefy(m, e)}
+
 rvc_tbl = rvc_tbl %>%
   mutate(
-    specnum  = map(data_wide, function(x) select(x, -dataset_id, -mapgridnum) %>% specnumber))
-    specnum  = map(data_wide, function(x) select(x, -dataset_id, -mapgridnum) %>% specnumber))
+    specnumber = map(data_wide, function(x) select(x, -dataset_id, -mapgridnum, -n_stations) %>% specnumber),
+    rarefy     = map(data_wide, rarefy_df))
 
-x = rvc_tbl$data_wide[[1]]
-x
-rarefy(x %>% select(-dataset_id, -mapgridnum), x$n_stations, se = F, Margin = 1)
+# x = rvc_tbl$data_wide[[1]]
+# x
+# rarefy(x %>% select(-dataset_id, -mapgridnum), x$n_stations, se = F, Margin = 1)
 
 # 
 #     richness = map(veg_bray, rarefy(x, sample, se = F, Margin = 1))
