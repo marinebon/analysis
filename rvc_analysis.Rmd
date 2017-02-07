@@ -362,6 +362,7 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
     filter(!is.na(station_nr)) %>%
     group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>%
     summarise(
+      n_stations = length(unique(station_nr)),
       q = sum(quantificationValue, na.rm=T) / length(unique(station_nr))) %>%
     filter(q > 0, !is.na(q)) # filter: NA, 0's
   
@@ -379,6 +380,7 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
       year = year(eventDate)) %>%
     group_by(year, datasetID,  mapGridNumber, scientificName) %>%
     summarize(
+      n_stations = sum(n_stations),
       q_mean = mean(q))
   
   # write to csv
@@ -532,13 +534,15 @@ $$
 rvc_spp = read_csv(rvc_spp_csv) %>%
   select(
     year, dataset_id = datasetID, 
-    mapgridnum = mapGridNumber, scientific_name = scientificName, q_mean)
+    mapgridnum = mapGridNumber, scientific_name = scientificName, 
+    q_mean, n_stations)
 
 #vegan prep
 rvc_tbl = rvc_spp %>%
   nest(-year) %>%
   mutate(
-    data_wide = map(data, ~ spread(data=.x, scientific_name, q_mean, fill=0)))
+    data_wide    = map(data, ~ spread(data=.x, scientific_name, q_mean, fill=0)),
+    mg_nstations = )
 ```
 
 ```{r normalize, eval=F}
@@ -557,7 +561,7 @@ rvc_tbl = rvc_tbl %>%
 #spread(data=.x, scientific_name, q_mean, fill=0)
 ```
 
-```{r sum}
+```{r sum, eval=F}
 #summarize by species
 rvc_spp_w = rvc_spp %>%
    group_by(scientific_name, year) %>%
@@ -565,7 +569,6 @@ rvc_spp_w = rvc_spp %>%
      mg_q_var  = var(q_mean),
      mg_q_mean = mean(q_mean)) %>%
    ungroup()
-   
 ```
 
 ## Biodiversity Metrics
@@ -582,7 +585,9 @@ rvc_tbl = rvc_tbl %>%
     specnum  = map(data_wide, function(x) select(x, -dataset_id, -mapgridnum) %>% specnumber))
     specnum  = map(data_wide, function(x) select(x, -dataset_id, -mapgridnum) %>% specnumber))
 
-rarefy(rvc_tbl$data_wide[[1]] %>% select(-dataset_id, -mapgridnum), se = F, Margin = 1)
+x = rvc_tbl$data_wide[[1]]
+x
+rarefy(x %>% select(-dataset_id, -mapgridnum), x$n_stations, se = F, Margin = 1)
 
 # 
 #     richness = map(veg_bray, rarefy(x, sample, se = F, Margin = 1))
