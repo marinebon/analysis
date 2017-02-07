@@ -68,9 +68,9 @@ Add-ons:
   - capture across larger group, or within functional groups
   - Rao's Q
 1. Evaluate size classes over time, and in/out MPAs. Need to not aggregate across length classes.
-1. Differentiate 4 sections: 
+1. Differentiate 4 subregions: 
   - upper/lower: more protected by land
-  - middle: nutrient & freshwater influx from Bay
+  - middle keys: nutrient & freshwater influx from Bay
   - Dry Tortugas: more oceanic
 
 Visualization:
@@ -629,17 +629,16 @@ rvc_spp_w = rvc_spp %>%
   # sample = number of sampling events 
   richness = rarefy(x, sample, se = F, Margin = 1)
 ```  
-
+ - **Evenness**: 
+  - `Simpson` 1/D (1 = completely even)
 ```{r Effective Simpson}
   rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='simpson'))
 ``` 
-
+  - `Shannon`, effective: rewards higher species linearly (vs just Shannon)
 ```{r Effective Shannon}
     rvc_mg_eff_shannon = exp(diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='shannon'))
 ```
- - **Evenness**: 
-  - `Simpson` 1/D (1 = completely even)
-  - `Shannon`, effective: rewards higher species linearly (vs just Shannon)
+
 ```{r Pielou's Evenness}
 #where x is abundance dataframe 
 J <- diversity(x, index = 'shannon')/log(specnumber(x)) 
@@ -744,7 +743,6 @@ names(alphadiv.list)=c("abund","biomass","pres.abs")
 - **phylogenetic diversity**
 
 ## Correlation
-
 
 ```{r correlation}
 
