@@ -489,6 +489,16 @@ rvc_spp = rvc_spp %>%
 write_csv(rvc_spp, 'data/rvc_spp_grouped.csv')
 ```  
 
+```{r rvc_spp_group-summarized.csv}
+read_csv('data/rvc_spp_group-summary.csv') %>%
+  group_by(group) %>%
+  summarize(
+    n_species = n(),
+    common_names = paste(common_name, collapse=', ')) %>%
+  write_csv('data/rvc_spp_group-summarized.csv')
+```
+
+
 
 ```{r plot richness}
 library(tidyverse)
@@ -635,7 +645,6 @@ boxplot(sp2, col = "yellow", border = "blue", lty=1, cex=0.3, add= TRUE)
 sapply(mods$models, AIC)
 ```
 
-  
 ```{r Richness}  
 #rarefraction curves are usful when comparing species richness with different sample sizes 
 # x = abundance dataframe
