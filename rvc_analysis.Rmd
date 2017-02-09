@@ -24,6 +24,8 @@ suppressPackageStartupMessages({
   library(DT)
   library(readxl)
   library(stringr)
+  library(FD)
+  library(clue)
   #library(dygraphs)
   #library(xts)
 })
