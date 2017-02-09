@@ -18,6 +18,7 @@ suppressPackageStartupMessages({
   library(raster)
   library(sp)
   library(leaflet)
+  library(scales)
   library(vegan)
   library(rerddap)
   library(DT)
@@ -212,7 +213,6 @@ Combine ERDDAP datasets across years for Florida Keys Reef Visual Census
 
 ```{r fetch}
 # csv files to read (since time consuming to create using ERDDAP server calls)
-
 rvc_rds     = 'data/rvc.rds'
 rvc_mg_csv  = 'data/rvc_mapgrid_locations.csv'
 rvc_spp_csv = 'data/rvc_species_densities.csv'
@@ -221,7 +221,7 @@ rvc_spp_csv = 'data/rvc_species_densities.csv'
 eurl = 'http://gcoos4.tamu.edu:8080/erddap/' # search/index.html?page=1&itemsPerPage=1000&searchFor=Florida+Keys+Reef+Fish+Visual+Census
 
 # only load full rvc.rds if need be (since slow)
-if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
+if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv)))){
   if (!file.exists(rvc_rds)){
     # create csv files
     
@@ -497,10 +497,10 @@ read_csv('data/rvc_spp_group-summary.csv') %>%
 ```
 
 
-
-```{r plot richness}
+```{r crosstalk map of spp richness markers}
 library(tidyverse)
 library(leaflet)
+library(scales)
 library(DT)
 library(crosstalk)
 
@@ -517,21 +517,122 @@ spp_rich = rvc_spp %>%
   rename(lat=latitude, lon=longitude)
 
 
-# Wrap data frame in SharedData
-sd <- SharedData$new(spp_rich[sample(nrow(spp_rich), 100),])
-
-# Create a filter input
-filter_slider(
-  "year", "Year", sd, column=~year, step=1, width=with(sd$data(), max(year) - min(year)))
-
-# Use SharedData like a dataframe with Crosstalk-enabled widgets
+# # Wrap data frame in SharedData
+# sd <- SharedData$new(spp_rich[sample(nrow(spp_rich), 100),])
+# 
+# # Create a filter input
+# filter_slider(
+#   "year", "Year", sd, column=~year, step=1, width=with(sd$data(), max(year) - min(year)))
+# 
+# # Use SharedData like a dataframe with Crosstalk-enabled widgets
 # bscols(
-#   leaflet(sd) %>% addTiles() %>% addMarkers(lat=~lat, lng=~lon),
+#   leaflet(sd) %>% 
+#     addTiles() %>% 
+#     addMarkers(lat=~lat, lng=~lon),
 #   datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
 #     options=list(deferRender=TRUE, scrollY=300, scroller=TRUE))
 # )
 
+
+# Wrap data frame in SharedData
+#sd <- SharedData$new(spp_rich[sample(nrow(spp_rich), 100),])
+sd <- SharedData$new(spp_rich[sample(nrow(spp_rich), 100),])
+sd <- SharedData$new(spp_rich) # View(sd$data())
+
+# Create a filter input
+#filter_slider(
+#   "year", "Year", sd, column=~date) # , width='90%', animate=T, timeFormat='%Y')
+filter_slider(
+  "year", "Year", sd, column=~year, width='90%', animate=T, sep='')
+#, step=2, dragRange = 2)
+  
+  #sep='')
+#with(sd$data(), max(year) - min(year))
+
+# Create a palette that maps factor levels to colors
+pal <- colorNumeric('YlOrRd', sd$data()$n_spp) # 'Spectral'
+
+# Use SharedData like a dataframe with Crosstalk-enabled widgets
+bscols(
+  leaflet(sd) %>% 
+    addProviderTiles('Esri.OceanBasemap') %>%
+    addCircleMarkers(
+      #lng = ~lon, lat = ~lat,
+      radius = ~rescale(n_spp, to=c(0.1, 10)),
+      color = ~pal(n_spp),
+      stroke = FALSE, fillOpacity = 0.5) %>%
+    addLegend("topleft", pal = pal, values = sd$data()$n_spp,
+      title = "n spp", opacity = 1),
+    #addMarkers(),
+  datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
+    options=list(deferRender=TRUE, scrollY=300, scroller=TRUE)))
 ```
+
+```{r leaflet map of spp richness raster}
+library(tidyverse)
+library(leaflet)
+library(raster)
+library(sp)
+library(rgdal)
+library(scales)
+library(DT)
+
+rvc_spp = read_csv('data/rvc_spp_grouped.csv')
+rvc_mg  = read_csv('data/rvc_mapgrid_locations.csv')
+
+spp_rich = rvc_spp %>%
+  group_by(year,dataset_id, mapgridnum) %>%
+  summarize(
+    n_spp = length(unique(scientific_name))) %>%
+  left_join(
+    rvc_mg,
+    by=c('dataset_id'='datasetID', 'mapgridnum'='mapGridNumber')) %>%
+  rename(lat=latitude, lon=longitude) %>%
+  mutate(x = lon, y = lat) %>%
+  ungroup()
+
+# convert to points
+pts_rich = spp_rich
+coordinates(pts_rich) = ~ x + y
+CRS(pts_rich) = leaflet:::epsg4326
+
+pts_rich_mer <- spTransform(pts_rich, CRS(leaflet:::epsg3857))
+summary(state.ll83)
+state.merc <- spTransform(st
+                          
+
+rasterize(spp_rich) 
+sp::
+
+leafletCRS()
+
+leaflet::addAwesomeMarkers()
+
+# Get PROJ.4 information for a particular EPSG code
+subset(EPSG, code==2784)
+
+rasterize()
+
+# Create a palette that maps factor levels to colors
+pal <- colorNumeric('YlOrRd', sd$data()$n_spp) # 'Spectral'
+
+# Use SharedData like a dataframe with Crosstalk-enabled widgets
+bscols(
+  leaflet(sd) %>% 
+    addProviderTiles('Esri.OceanBasemap') %>%
+    addCircleMarkers(
+      #lng = ~lon, lat = ~lat,
+      radius = ~rescale(n_spp, to=c(0.1, 10)),
+      color = ~pal(n_spp),
+      stroke = FALSE, fillOpacity = 0.5) %>%
+    addLegend("topleft", pal = pal, values = sd$data()$n_spp,
+      title = "n spp", opacity = 1),
+    #addMarkers(),
+  datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
+    options=list(deferRender=TRUE, scrollY=300, scroller=TRUE)))
+```
+
+
 # Missing 
 ```{r missing, eval=F}
  
