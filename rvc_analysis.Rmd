@@ -570,7 +570,7 @@ bscols(
     options=list(deferRender=TRUE, scrollY=300, scroller=TRUE)))
 ```
 
-```{r leaflet map of spp richness raster}
+```{r leaflet map of spp richness raster, eval=F}
 library(tidyverse)
 library(leaflet)
 library(raster)
@@ -787,15 +787,19 @@ rvc_tbl = rvc_tbl %>%
  - **Evenness**: 
   - `Simpson` 1/D (1 = completely even)
 ```{r Effective Simpson}
-  rvc_tbl = rvc_tbl %>%
-  mutate(
-    rvc_mg_eff_simpson  = map(1/(1-diversity(data_wide, function(x), select(x, -dataset_id, -mapgridnum), index='simpson')) %>% eff_simpson)
+# test with one
+# x = rvc_tbl$data_wide[[1]] # mapgridnum x species
+# eff_simpson = 1 / (1 - diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='simpson'))
 
-#rvc_mg_eff_simpson = 1/(1-diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='simpson'))
+rvc_tbl = rvc_tbl %>%
+  mutate(
+    eff_simpson = map(data_wide, function(x) 1 / (1 - diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='simpson'))))
+
+hist(rvc_tbl$eff_simpson[[1]])
 ``` 
   - `Shannon`, effective: rewards higher species linearly (vs just Shannon)
 ```{r Effective Shannon}
-    rvc_mg_eff_shannon = exp(diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='shannon'))
+rvc_mg_eff_shannon = exp(diversity(rvc_mg_wide %>% select(-year, -datasetID, -mapGridNumber), index='shannon'))
 ```
 
 ```{r Pielous Evenness}
