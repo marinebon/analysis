@@ -638,6 +638,8 @@ make_hexgrid <- function(x, cell_diameter, cell_area, clip = FALSE) {
 }
 h = spsample(pts_rich_mer, cell_diameter = 10000, clip=T)
 
+# TODO: use dggridR: Discrete Global Grids for R
+# https://cran.r-project.org/web/packages/dggridR/vignettes/dggridR.html#binning-lat-long-points
 
 p$hex_id = over(p, h)
 
