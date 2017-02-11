@@ -572,16 +572,18 @@ bscols(
 
 ```{r leaflet map of spp richness raster, eval=F}
 library(tidyverse)
-library(leaflet)
-library(raster)
 library(sp)
 library(rgdal)
+library(raster)
+#library(sf)
+library(leaflet)
 library(scales)
 library(DT)
 
 rvc_spp = read_csv('data/rvc_spp_grouped.csv')
 rvc_mg  = read_csv('data/rvc_mapgrid_locations.csv')
 
+# TODO: add species groups
 spp_rich = rvc_spp %>%
   group_by(year,dataset_id, mapgridnum) %>%
   summarize(
@@ -593,45 +595,108 @@ spp_rich = rvc_spp %>%
   mutate(x = lon, y = lat) %>%
   ungroup()
 
+
+# set projections
+prj_gcs = leaflet:::epsg4326 # gcs: geographic coordinate system (decimal degrees)
+prj_mer = leaflet:::epsg3857 # mer: web Mercator (meters)
+
 # convert to points
-pts_rich = spp_rich
-coordinates(pts_rich) = ~ x + y
-CRS(pts_rich) = leaflet:::epsg4326
+pts_rich_gcs = spp_rich
+coordinates(pts_rich_gcs) = ~ x + y
+proj4string(pts_rich_gcs) = prj_gcs
+p = spTransform(pts_rich_gcs, CRS(prj_mer)) # %>% st_as_sf()
 
-pts_rich_mer <- spTransform(pts_rich, CRS(leaflet:::epsg3857))
-summary(state.ll83)
-state.merc <- spTransform(st
-                          
+# TODO: offset c(0.5,0.5) to get all points?
+h = spsample(pts_rich_mer,  type="hexagonal", cellsize=10000, offset=c(0,0)) %>%
+  HexPoints2SpatialPolygons() # %>% st_as_sf() # plot(h)
 
-rasterize(spp_rich) 
-sp::
+# TODO: use make_hexgrid from http://strimas.com/spatial/hexagonal-grids/
+make_hexgrid <- function(x, cell_diameter, cell_area, clip = FALSE) {
+  if (missing(cell_diameter)) {
+    if (missing(cell_area)) {
+      stop("Must provide cell_diameter or cell_area")
+    } else {
+      cell_diameter <- sqrt(2 * cell_area / sqrt(3))
+    }
+  }
+  ext <- as(extent(x) + cell_diameter, "SpatialPolygons")
+  projection(ext) <- projection(x)
+  # generate array of hexagon centers
+  g <- spsample(ext, type = "hexagonal", cellsize = cell_diameter, 
+                offset = c(0.5, 0.5))
+  # convert center points to hexagons
+  g <- HexPoints2SpatialPolygons(g, dx = cell_diameter)
+  # clip to boundary of study area
+  if (clip) {
+    g <- gIntersection(g, x, byid = TRUE)
+  } else {
+    g <- g[x, ]
+  }
+  # clean up feature IDs
+  row.names(g) <- as.character(1:length(g))
+  return(g)
+}
+h = spsample(pts_rich_mer, cell_diameter = 10000, clip=T)
 
-leafletCRS()
 
-leaflet::addAwesomeMarkers()
+p$hex_id = over(p, h)
 
-# Get PROJ.4 information for a particular EPSG code
-subset(EPSG, code==2784)
+h_d = p@data %>% 
+  group_by(hex_id) %>%
+  summarize(
+    n_pts = n(),
+    n_spp = mean(n_spp, na.rm=T)) %>%
+  filter(!is.na(hex_id)) %>% # TODO: get hex_id where NA, ie no hex for pts?
+  arrange(n_spp) %>%
+  as.data.frame()
+#View(h_d)
+row.names(h_d) = h_d$hex_id
 
-rasterize()
+h_p = SpatialPolygonsDataFrame(h[h_d$hex_id], h_d, match.ID=F)
+proj4string(h_p) = prj_mer
+
+spplot(h_p['n_spp'])
+spplot(h_p['n_pts'])
+# yay! works
+
+h_gcs = spTransform(h_p, CRS(prj_gcs)) # %>% st_as_sf()
+
+leaflet(h_gcs) %>%
+  addProviderTiles('Esri.OceanBasemap') %>%
+  addPolygons(
+    stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
+    color = ~colorQuantile('Spectral', h_p$n_spp)(n_spp))
+# yay! works
+
+# TODO: [mapedit - interactively edit spatial data in R](http://r-spatial.org/r/2017/01/30/mapedit_intro.html)
+
+
+# rasterize ----
+b = bbox(pts_rich_gcs)
+r_g = raster(extent(pts_rich_mer), resolution=200, crs=CRS(prj_mer))
+
+r_a = rasterize(pts_rich_mer, r_g, 'n_spp', fun=mean) 
+plot(r_a)
 
 # Create a palette that maps factor levels to colors
-pal <- colorNumeric('YlOrRd', sd$data()$n_spp) # 'Spectral'
+pal <- colorNumeric('YlOrRd', spp_rich$n_spp, na.color = "transparent") # 'Spectral'
 
-# Use SharedData like a dataframe with Crosstalk-enabled widgets
-bscols(
-  leaflet(sd) %>% 
-    addProviderTiles('Esri.OceanBasemap') %>%
-    addCircleMarkers(
-      #lng = ~lon, lat = ~lat,
-      radius = ~rescale(n_spp, to=c(0.1, 10)),
-      color = ~pal(n_spp),
-      stroke = FALSE, fillOpacity = 0.5) %>%
-    addLegend("topleft", pal = pal, values = sd$data()$n_spp,
-      title = "n spp", opacity = 1),
-    #addMarkers(),
-  datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
-    options=list(deferRender=TRUE, scrollY=300, scroller=TRUE)))
+# TODO: ggmap static output
+
+# old: map of spp richness pts ----
+leaflet(spp_rich) %>% 
+  addProviderTiles('Esri.OceanBasemap') %>%
+  addRasterImage(r_a, colors = pal, opacity = 0.8) %>%
+  addCircleMarkers(
+    lng = ~lon, lat = ~lat,
+    #radius = ~rescale(n_spp, to=c(0.1, 5)),
+    radius = 5,
+    #stroke = T, color = 'black', weight=0.1,
+    stroke = F,
+    #fill = ~pal(n_spp), fillOpacity = 1) %>%
+    fill = 'blue', fillOpacity = 0.5) %>%
+  addLegend("topleft", pal = pal, values = spp_rich$n_spp,
+    title = "n spp", opacity = 1)
 ```
 
 
