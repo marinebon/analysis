@@ -460,10 +460,10 @@ spp_roles = spp_roles %>%
 #View(spp_roles)
 
 # join to rvc_spp
-rvc_spp = rvc_spp %>%
+rvc_grp = rvc_spp %>%
   select(
     year, dataset_id = datasetID, 
-    mapgridnum = mapGridNumber, scientific_name = scientificName) %>%
+    mapgridnum = mapGridNumber, scientific_name = scientificName, q_mean, n_stations) %>%
   left_join(
     spp_traits,
     by = c('scientific_name'='latin_name')) %>%
@@ -472,9 +472,9 @@ rvc_spp = rvc_spp %>%
     by = c('scientific_name'='scientific_name')) %>%
   mutate(
     group = ifelse(is.na(importance), trophic_group, importance))
-# View(rvc_spp)
+# View(rvc_grp)
 
-rvc_sum = rvc_spp %>%
+rvc_sum = rvc_grp %>%
   group_by(importance, trophic_group, group, scientific_name, common_name) %>%
   summarize(
     n = n())
@@ -483,19 +483,30 @@ rvc_sum %>%
   filter(is.na(group)) %>%
   write_csv('data/rvc_spp_no-group-removed.csv')
 
-rvc_spp = rvc_spp %>%
+rvc_grp = rvc_grp %>%
   filter(!is.na(group))
 
-write_csv(rvc_spp, 'data/rvc_spp_grouped.csv')
+write_csv(rvc_grp, 'data/rvc_spp_grouped.csv')
 ```  
 
-```{r rvc_spp_group-summarized.csv}
-read_csv('data/rvc_spp_group-summary.csv') %>%
-  group_by(group) %>%
+```{r rvc_grp_sum.csv}
+rvc_grp = read_csv('data/rvc_spp_grouped.csv') # View(rvc_grp)
+
+rvc_grp_sum = rvc_grp %>%
+  group_by(group, year) %>%
   summarize(
-    n_species = n(),
-    common_names = paste(common_name, collapse=', ')) %>%
-  write_csv('data/rvc_spp_group-summarized.csv')
+    q_mean = mean(q_mean, na.rm=T),
+    n_species = length(unique(scientific_name))) %>%
+  ungroup() # View(rvc_grp_sum)
+
+write_csv(rvc_grp_sum, 'data/rvc_grp_years.csv')
+```
+
+```{r count_groups_by_year}
+rvc_spp = read_csv('data/rvc_spp_grouped.csv') # View(rvc_spp)
+
+rvc_spp %>%
+  group_by(group, )
 ```
 
 
