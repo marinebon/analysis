@@ -595,10 +595,11 @@ rvc_spp = read_csv('data/rvc_spp_grouped.csv')
 rvc_mg  = read_csv('data/rvc_mapgrid_locations.csv')
 
 # TODO: add species groups
-spp_rich = rvc_spp %>%
-  group_by(year,dataset_id, mapgridnum) %>%
+spp_mg = rvc_spp %>%
+  group_by(group, year, dataset_id, mapgridnum) %>%
   summarize(
-    n_spp = length(unique(scientific_name))) %>%
+    n_spp = length(unique(scientific_name)),
+    q_mean = mean(q_mean, na.rm=T)) %>%
   left_join(
     rvc_mg,
     by=c('dataset_id'='datasetID', 'mapgridnum'='mapGridNumber')) %>%
@@ -606,61 +607,64 @@ spp_rich = rvc_spp %>%
   mutate(x = lon, y = lat) %>%
   ungroup()
 
-
 # set projections
 prj_gcs = leaflet:::epsg4326 # gcs: geographic coordinate system (decimal degrees)
 prj_mer = leaflet:::epsg3857 # mer: web Mercator (meters)
 
 # convert to points
-pts_rich_gcs = spp_rich
-coordinates(pts_rich_gcs) = ~ x + y
-proj4string(pts_rich_gcs) = prj_gcs
-p = spTransform(pts_rich_gcs, CRS(prj_mer)) # %>% st_as_sf()
+pts = spp_mg
+coordinates(pts) = ~ x + y
+proj4string(pts) = prj_gcs
+p = spTransform(pts, CRS(prj_mer)) # %>% st_as_sf()
 
 # TODO: offset c(0.5,0.5) to get all points?
-h = spsample(pts_rich_mer,  type="hexagonal", cellsize=10000, offset=c(0,0)) %>%
+h = spsample(p,  type="hexagonal", cellsize=10000, offset=c(0,0)) %>%
   HexPoints2SpatialPolygons() # %>% st_as_sf() # plot(h)
 
 # TODO: use make_hexgrid from http://strimas.com/spatial/hexagonal-grids/
-make_hexgrid <- function(x, cell_diameter, cell_area, clip = FALSE) {
-  if (missing(cell_diameter)) {
-    if (missing(cell_area)) {
-      stop("Must provide cell_diameter or cell_area")
-    } else {
-      cell_diameter <- sqrt(2 * cell_area / sqrt(3))
-    }
-  }
-  ext <- as(extent(x) + cell_diameter, "SpatialPolygons")
-  projection(ext) <- projection(x)
-  # generate array of hexagon centers
-  g <- spsample(ext, type = "hexagonal", cellsize = cell_diameter, 
-                offset = c(0.5, 0.5))
-  # convert center points to hexagons
-  g <- HexPoints2SpatialPolygons(g, dx = cell_diameter)
-  # clip to boundary of study area
-  if (clip) {
-    g <- gIntersection(g, x, byid = TRUE)
-  } else {
-    g <- g[x, ]
-  }
-  # clean up feature IDs
-  row.names(g) <- as.character(1:length(g))
-  return(g)
-}
-h = spsample(pts_rich_mer, cell_diameter = 10000, clip=T)
+# make_hexgrid <- function(x, cell_diameter, cell_area, clip = FALSE) {
+#   if (missing(cell_diameter)) {
+#     if (missing(cell_area)) {
+#       stop("Must provide cell_diameter or cell_area")
+#     } else {
+#       cell_diameter <- sqrt(2 * cell_area / sqrt(3))
+#     }
+#   }
+#   ext <- as(extent(x) + cell_diameter, "SpatialPolygons")
+#   projection(ext) <- projection(x)
+#   # generate array of hexagon centers
+#   g <- spsample(ext, type = "hexagonal", cellsize = cell_diameter, 
+#                 offset = c(0.5, 0.5))
+#   # convert center points to hexagons
+#   g <- HexPoints2SpatialPolygons(g, dx = cell_diameter)
+#   # clip to boundary of study area
+#   if (clip) {
+#     g <- gIntersection(g, x, byid = TRUE)
+#   } else {
+#     g <- g[x, ]
+#   }
+#   # clean up feature IDs
+#   row.names(g) <- as.character(1:length(g))
+#   return(g)
+# }
+# h = spsample(pts_rich_mer, cell_diameter = 10000, clip=T)
 
 # TODO: use dggridR: Discrete Global Grids for R
 # https://cran.r-project.org/web/packages/dggridR/vignettes/dggridR.html#binning-lat-long-points
 
 p$hex_id = over(p, h)
 
-h_d = p@data %>% 
-  group_by(hex_id) %>%
+h_d = p@data %>% # View()
+  mutate(
+    grp_yr = sprintf('%s_%s', group %>% tolower() %>% str_replace_all(' ','_'), year)) %>%
+  group_by(grp_yr, hex_id) %>%
   summarize(
-    n_pts = n(),
-    n_spp = mean(n_spp, na.rm=T)) %>%
+    #n_pts  = n(),
+    #n_spp  = mean(n_spp, na.rm=T),
+    q_mean = mean(q_mean, na.rm=T)) %>%
   filter(!is.na(hex_id)) %>% # TODO: get hex_id where NA, ie no hex for pts?
-  arrange(n_spp) %>%
+  #arrange(n_spp) %>%
+  spread(grp_yr, q_mean) %>%
   as.data.frame()
 #View(h_d)
 row.names(h_d) = h_d$hex_id
@@ -668,17 +672,25 @@ row.names(h_d) = h_d$hex_id
 h_p = SpatialPolygonsDataFrame(h[h_d$hex_id], h_d, match.ID=F)
 proj4string(h_p) = prj_mer
 
-spplot(h_p['n_spp'])
-spplot(h_p['n_pts'])
+spplot(h_p['algal_farmer_1999'])
 # yay! works
 
 h_gcs = spTransform(h_p, CRS(prj_gcs)) # %>% st_as_sf()
 
+geojsonio::geojson_write(h_gcs, file='data/hex_grp_yr_q.geojson')
+
+library(RColorBrewer)
+
+var = 'algal_farmer_1999'
+v = h_gcs[[var]]
+pal = colorNumeric(rev(brewer.pal(11, 'Spectral')), v)
 leaflet(h_gcs) %>%
   addProviderTiles('Esri.OceanBasemap') %>%
   addPolygons(
     stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5,
-    color = ~colorQuantile('Spectral', h_p$n_spp)(n_spp))
+    color = pal(v)) %>%
+  addLegend('topleft', pal = pal, values = v, title = var)
+
 # yay! works
 
 # TODO: [mapedit - interactively edit spatial data in R](http://r-spatial.org/r/2017/01/30/mapedit_intro.html)
@@ -692,12 +704,12 @@ r_a = rasterize(pts_rich_mer, r_g, 'n_spp', fun=mean)
 plot(r_a)
 
 # Create a palette that maps factor levels to colors
-pal <- colorNumeric('YlOrRd', spp_rich$n_spp, na.color = "transparent") # 'Spectral'
+pal <- colorNumeric('YlOrRd', spp_mg$n_spp, na.color = "transparent") # 'Spectral'
 
 # TODO: ggmap static output
 
 # old: map of spp richness pts ----
-leaflet(spp_rich) %>% 
+leaflet(spp_mg) %>% 
   addProviderTiles('Esri.OceanBasemap') %>%
   addRasterImage(r_a, colors = pal, opacity = 0.8) %>%
   addCircleMarkers(
@@ -708,7 +720,7 @@ leaflet(spp_rich) %>%
     stroke = F,
     #fill = ~pal(n_spp), fillOpacity = 1) %>%
     fill = 'blue', fillOpacity = 0.5) %>%
-  addLegend("topleft", pal = pal, values = spp_rich$n_spp,
+  addLegend("topleft", pal = pal, values = spp_mg$n_spp,
     title = "n spp", opacity = 1)
 ```
 
