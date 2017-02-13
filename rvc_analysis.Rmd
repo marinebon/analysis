@@ -656,7 +656,7 @@ p$hex_id = over(p, h)
 
 h_d = p@data %>% # View()
   mutate(
-    grp_yr = sprintf('%s_%s', group %>% tolower() %>% str_replace_all(' ','_'), year)) %>%
+    grp_yr = sprintf('%s_%s', group %>% tolower() %>% str_replace_all(' ','.'), year)) %>%
   group_by(grp_yr, hex_id) %>%
   summarize(
     #n_pts  = n(),
@@ -672,7 +672,7 @@ row.names(h_d) = h_d$hex_id
 h_p = SpatialPolygonsDataFrame(h[h_d$hex_id], h_d, match.ID=F)
 proj4string(h_p) = prj_mer
 
-spplot(h_p['algal_farmer_1999'])
+spplot(h_p['algal.farmer_1999'])
 # yay! works
 
 h_gcs = spTransform(h_p, CRS(prj_gcs)) # %>% st_as_sf()
