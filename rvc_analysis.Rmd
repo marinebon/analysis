@@ -506,7 +506,7 @@ write_csv(rvc_grp_sum, 'data/rvc_grp_years.csv')
 rvc_spp = read_csv('data/rvc_spp_grouped.csv') # View(rvc_spp)
 
 rvc_spp %>%
-  group_by(group, )
+  group_by(group, ) #2/13/17 Ben - I receive error: unknown variable to group by: 
 ```
 
 
@@ -738,7 +738,7 @@ spp_traits_missing = unique(spp_traits$latin_name)[!unique(spp_traits$latin_name
 # eg missing red snapper (Lutjanus campechanus)
 spp_traits %>%
   filter(latin_name %in% spp_traits_missing) %>%
-  arrange(Trophic_group, Common_name) %>%
+  arrange(trophic_group, common_name) %>% 
   View()
 
 ```
@@ -845,17 +845,29 @@ rvc_tbl = rvc_tbl %>%
 
 ```
 
-```{r Rarefy}
-rarefy_df = function(x){
-  m = select(x, -dataset_id, -mapgridnum, -n_stations) %>% as.matrix()
-  storage.mode(m) = 'integer'
-  e = x %>% .$n_stations
-  rarefy(m, e)}
+```{r Species Accumulation}
+#specaccum finds species accumulation curves or the number of species for a certain number of sampled sites or individuals
 
 rvc_tbl = rvc_tbl %>%
   mutate(
-    specnumber = map(data_wide, function(x) select(x, -dataset_id, -mapgridnum, -n_stations) %>% specnumber),
-    rarefy     = map(data_wide, rarefy_df))
+    sp_accum = map(data_wide, function(x) specaccum(x %>% select(-dataset_id, -mapgridnum, -n_stations), method = "exact", conditioned = "true")))
+
+#View(rvc_tbl)
+
+```
+
+```{r Rarefy, eval = F}
+
+# rarefy_df = function(x){
+#   m = select(x, -dataset_id, -mapgridnum, -n_stations) %>% as.matrix()
+#   storage.mode(m) = 'integer'
+#   e = x %>% .$n_stations
+#   rarefy(m, e)}
+# 
+# rvc_tbl = rvc_tbl %>%
+#   mutate(
+#     specnumber = map(data_wide, function(x) select(x, -dataset_id, -mapgridnum, -n_stations) %>% specnumber),
+#     rarefy     = map(data_wide, rarefy_df))
 
 # x = rvc_tbl$data_wide[[1]]
 # x
@@ -909,9 +921,9 @@ rvc_tbl = rvc_tbl %>%
 
 rvc_tbl = rvc_tbl %>%
   mutate(
-    Pielous_evenness = map(data_wide, function(x) (diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='shannon')/log(specnumber(x)))))
+    Pielous_evenness = map(data_wide, function(x) diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='shannon')/log(specnumber(x))))
 
-#hist(rvc_tbl$Pielous_evenness[[1]])
+hist(rvc_tbl$Pielous_evenness[[1]])
 
 ```
 Spatial variants:
