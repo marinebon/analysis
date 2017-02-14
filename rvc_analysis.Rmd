@@ -502,14 +502,6 @@ rvc_grp_sum = rvc_grp %>%
 write_csv(rvc_grp_sum, 'data/rvc_grp_years.csv')
 ```
 
-```{r count_groups_by_year}
-rvc_spp = read_csv('data/rvc_spp_grouped.csv') # View(rvc_spp)
-
-rvc_spp %>%
-  group_by(group, ) #2/13/17 Ben - I receive error: unknown variable to group by: 
-```
-
-
 ```{r crosstalk map of spp richness markers}
 library(tidyverse)
 library(leaflet)
@@ -841,7 +833,7 @@ rvc_tbl = rvc_tbl %>%
   mutate(
     richness = map(data_wide, function(x) specnumber(x %>% select(-dataset_id, -mapgridnum, -n_stations))))
 
-#hist(rvc_tbl$richness[[1]])
+hist(rvc_tbl$richness[[1]])
 
 ```
 
@@ -935,13 +927,10 @@ Others:
 - **functional diversity**
 
 ```{r Effective Rao Q}
-#read in species*community relative abundance dataframe 
-
-#compute relative abundance of each species in each year and community
-#remove 'sp.' in abundance dataframe - identified to family 
-#substitute scientific name with species common name 
 
 #arrange alphabetically 
+rao = rvc_grp %>% 
+    arrange(common_name)
 
 #match species in trait dataframe with species in abundance dataframe 
 
