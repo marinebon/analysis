@@ -26,6 +26,7 @@ suppressPackageStartupMessages({
   library(stringr)
   library(FD)
   library(clue)
+  library(fpc) #Calls: pamk
   #library(dygraphs)
   #library(xts)
 })
@@ -938,7 +939,8 @@ w_mcq = rvc_grp %>%
   # NOTE: spread() before nest() by year gives max columns, vs fewer if after
   spread(common_name, q_mean, fill=0) %>% # View() # dim() 336 columns
   group_by(year) %>%
-  nest()
+  nest() %>%
+  as.data.frame()
 
 # wide: common_name x traits
 d_traits = rvc_grp %>% 
@@ -966,7 +968,7 @@ head(d_traits)
 
 #### OLD (Jan 18)
 #Calculate Gower distances
-traits.dist=gowdis(traits,ord="podani")
+traits.dist=gowdis(d_traits,ord="podani")
 
 #Use clustering method to produce ultrametric dendrogramBecause values of Rao's Q can be maximized when fewer than the max number of functional types are present unless distances are ultramtetric 
 
@@ -1016,32 +1018,8 @@ plot(func.dist,horiz=TRUE)
 write.tree(as.phylo(as.hclust(func.dist)),"Functional dendrogram")
 
 #calculate effective Rao's Q 
-#Calculate alpha diversity
-alphadiv.list=lapply(list(catch_abund,catch_biomass,catch_pres.abs),
- function(i) {
-   #Extract community matrix from object in list
-   mat=i[,c(1,18:(ncol(i)-1))]
-   rownames(mat)=mat[,1]; mat=mat[,-1]
-   #Calculate relative values for community matrix
-   rel.mat=mat/apply(mat,1,sum)
-   #Compute species diversity
-   species.dist=matrix(1,ncol(mat),ncol(mat))-diag(rep(1,ncol(mat))) 
-   species.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% species.dist %*% x))
-   #Compute evenness (as in Jost 2010 Diversity)
-   evenness=log(species.div)/log(rowSums(mat>0))
-   #Ensure that all evenness calculations are not >1 (bug)
-   evenness[evenness>1]=1
-   #Compute functional diversity 
-   func.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% as.matrix(func.dist) %*% x))
-   #Compute phylogenetic diversity
-   phylo.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% as.matrix(phylo.dist) %*% x))
-   #Compute taxonomic diversity
-   taxo.div=1/(1-apply(rel.mat,1,function(x) t(x) %*% as.matrix(taxo.dist) %*% x))
-   #Bind all to the original dataframe
-   cbind(i,evenness,species.div,func.div,phylo.div,taxo.div) } ) 
-names(alphadiv.list)=c("abund","biomass","pres.abs")
+func.div=1/(1-apply(w_mcq,1,function(x) t(x) %*% as.matrix(func.dist) %*% x)) #Error in t(x) %*% as.matrix(func.dist) : requires numeric/complex matrix/vector arguments
 
- 
 ```
 - **phylogenetic diversity**
 
