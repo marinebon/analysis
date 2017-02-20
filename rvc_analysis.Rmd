@@ -1189,14 +1189,16 @@ Metadata:
 WQ = read_csv('data/SERC_Water_Quality_FKNMS.csv')
 #View(WQ)
 
-#summarize by BASIN, SEGMENT, DATE, LATDEC, LONDEC, SITE, STA, TEMP-S, TEMP-B
+#summarize by SEGMENT, DATE, LATDEC, LONDEC, TEMP-S, TEMP-B
 temp = WQ %>% 
-    select(BASIN, SEGMENT, DATE, LATDEC, LONDEC, SITE, STATION, surftemp = `TEMP-S`, bottemp = `TEMP-B`) %>% 
-    tolower() %>%
-    group_by(date, latdec, londec, surftemp, bottemp) #error object class 'character' 
-    View(temp)
+    select(date = DATE, segment = SEGMENT, lat = LATDEC, long = LONDEC, surftemp = `TEMP-S`, bottemp = `TEMP-B`) %>% 
+    filter(!is.na(bottemp))%>%
+    filter(!is.na(surftemp))%>%
+    group_by(date, lat, long, segment, surftemp, bottemp) %>%
+    as.data.frame() %>%
+    order(as.Date(date, format='%m/%d/%y')) %>% #ERROR I HATE DATES!!!! 
+    #View(temp)
       
-
 ```
 
 ### Use Values in Dataset
