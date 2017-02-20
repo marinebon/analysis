@@ -1190,11 +1190,10 @@ WQ = read_csv('data/SERC_Water_Quality_FKNMS.csv')
 #View(WQ)
 
 #summarize by BASIN, SEGMENT, DATE, LATDEC, LONDEC, SITE, STA, TEMP-S, TEMP-B
-temp = WQ %>%
+temp = WQ %>% 
     select(BASIN, SEGMENT, DATE, LATDEC, LONDEC, SITE, STATION, surftemp = `TEMP-S`, bottemp = `TEMP-B`) %>% 
     tolower() %>%
-    date = as.numeric(date)
-    group_by(date, latdec, londec, surftemp, bottemp)
+    group_by(date, latdec, londec, surftemp, bottemp) #error object class 'character' 
     View(temp)
       
 
