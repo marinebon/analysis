@@ -1170,6 +1170,36 @@ d %>%
 
 ## Relating to the Environment
 
+- SERC Water Quality Monitoring Project for the FKNMS http://serc.fiu.edu/wqmnetwork/FKNMS-CD/DataDL.htm 
+
+Metadata:
+- Basin name: FK= Florida Keys; SHELF= Southwest Florida Shelf (BASIN)
+- Biogeochemical Segment (SEGMENT)
+- Sampling Date (DATE)
+- Latitude (LATDEC)
+- Longitude (LONDEC)
+- Site Name (SITE)
+- Station # (STA)
+- Surface Temperature ᴼC (TEMP-S)
+- Bottom Temperature ᴼC (TEMP-B)
+
+
+```{r SERC Water Quality}
+#read SERC WQ data
+WQ = read_csv('data/SERC_Water_Quality_FKNMS.csv')
+#View(WQ)
+
+#summarize by BASIN, SEGMENT, DATE, LATDEC, LONDEC, SITE, STA, TEMP-S, TEMP-B
+temp = WQ %>%
+    select(BASIN, SEGMENT, DATE, LATDEC, LONDEC, SITE, STATION, surftemp = `TEMP-S`, bottemp = `TEMP-B`) %>% 
+    tolower() %>%
+    date = as.numeric(date)
+    group_by(date, latdec, londec, surftemp, bottemp)
+    View(temp)
+      
+
+```
+
 ### Use Values in Dataset
 
 Existing values:
