@@ -770,6 +770,32 @@ rvc_tbl = rvc_spp %>%
 ```{r normalize, eval=F}
 #feed site (rows) x species (columns)
 
+d = tribble(
+  ~site, ~x, ~y, ~z,
+  'a'   , 1,	2,	3,
+  'b'   , 1,	5,	7,
+  'c'   , 0,	2,	3)
+  
+m = matrix(c(
+  1,	2,	3,
+  1,	5,	7,
+  0,	2,	3),
+  nrow=3, byrow=T,
+  dimnames = list(
+    sites   = c('a','b','c'),
+    species = c('x','y','z')))
+m
+
+vegdist(m, method='bray', diag=T, upper=T, binary=F)
+
+spp = dimnames(m)[['species']]
+bray_ab = sum(abs(m['a', spp] - m['b',spp])) / 
+  sum(m['a',spp] + m['b',spp])
+bray_ab
+
+d[jk] = (sum abs(x[ij]-x[ik]))/(sum (x[ij]+x[ik]))
+binary: (A+B-2*J)/(A+B)
+
 vegdist_df <- function(df){
   vegdist(df %>% select(-dataset_id, -mapgridnum), 
       method="bray", binary=F, diag=F, upper=F)
@@ -894,8 +920,18 @@ rvc_tbl = rvc_tbl %>%
 # Effective Simpson of the entire FKNMS 
 rvc_tbl = rvc_tbl %>%
   mutate(
-    eff_simpson = map(data_wide, function(x) 1 / (1 - diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='simpson')))) 
+    eff_simpson = map(
+      data_wide, 
+      function(x) 1 / (1 - diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='simpson'))),
+    eff_simpson_bray = map(
+      veg_bray_m, 
+      function(x) 1 / (1 - diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='simpson')))) 
+boxplot(rvc_tbl$eff_simpson)
+boxplot(rvc_tbl$eff_simpson_bray)
 
+
+rvc_tbl$data_wide[[1]]
+rvc_tbl$veg_bray[1]
 #trial1 = rvc_tbl %>%
   #spread(year, eff_simpson)
 
@@ -912,6 +948,8 @@ rvc_tbl = rvc_tbl %>%
 #trial6 = rvc_tbl %>%
   #select(data_wide, eff_simpson) 
 #trial6.2 = spread(trial6, data_wide, eff_simpson, fill=0)
+
+
 
 trial7 = mean(rvc_tbl$eff_simpson[[15]])
 
@@ -1047,6 +1085,8 @@ plot(func.dist,horiz=TRUE)
 write.tree(as.phylo(as.hclust(func.dist)),"Functional dendrogram")
 
 #calculate effective Rao's Q 
+func.div = 1 / ( 1 - apply(rel.mat, 1, function(x) t(x) %*% as.matrix(func.dist) %*% x) )
+
 function(i){
   func_div=1/(1-apply(w_mcq,1, function(x) t(x) %*% as.matrix(func.dist)%*% x))}
 
