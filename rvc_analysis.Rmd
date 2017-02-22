@@ -27,6 +27,8 @@ suppressPackageStartupMessages({
   library(FD)
   library(clue)
   library(fpc) #Calls: pamk
+  library(psych)
+  library(raster)
   #library(dygraphs)
   #library(xts)
 })
@@ -238,7 +240,7 @@ if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv)))){
     
     ids = c(
       # Dry Tortugas
-      sprintf('dt%d', c(1999,2000,2004,2006,2008,2010,2012,2014)),
+      sprintf('dt%d', c(1999,2000,2004,2006,2008,2010,2012,2014,2016)),
       # Florida Keys
       sprintf('fk%d', 1999:2014)) # diff't method 1994:1998
     
@@ -349,6 +351,7 @@ Fetched data had the following nested elements:
 - primary sampling unit (`primarySamplingUnit`)
 - map grid number (`mapGridNumber`)
 - year of sampling event (`eventDate`)
+- protection level (`protection`)
 
 Next, we aggregate to having average density of species per map grid.
 
@@ -888,15 +891,36 @@ rvc_tbl = rvc_tbl %>%
  - **Evenness**: 
   - `Simpson` 1/D (1 = completely even)
 ```{r Effective Simpson}
-# test with one
-# x = rvc_tbl$data_wide[[1]] # mapgridnum x species
-# eff_simpson = 1 / (1 - diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='simpson'))
-
+# Effective Simpson of the entire FKNMS 
 rvc_tbl = rvc_tbl %>%
   mutate(
-    eff_simpson = map(data_wide, function(x) 1 / (1 - diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='simpson'))))
+    eff_simpson = map(data_wide, function(x) 1 / (1 - diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='simpson')))) 
 
-#hist(rvc_tbl$eff_simpson[[1]])
+#trial1 = rvc_tbl %>%
+  #spread(year, eff_simpson)
+
+#trial2 = spread(rvc_tbl, year, eff_simpson)
+
+#trial3 = rvc_tbl %>%
+  #spread(year, mean(eff_simpson))
+
+#trial4 = spread(rvc_tbl, year, mean(eff_simpson))
+
+#trial5 = rvc_tbl %>%
+  #spread(data_wide, eff_simpson)
+
+#trial6 = rvc_tbl %>%
+  #select(data_wide, eff_simpson) 
+#trial6.2 = spread(trial6, data_wide, eff_simpson, fill=0)
+
+trial7 = mean(rvc_tbl$eff_simpson[[15]])
+
+
+
+#mean(rvc_tbl$eff_simpson[[15]])
+hist(rvc_tbl$eff_simpson[[1]])
+#glimpse(rvc_tbl)
+
 
 ``` 
   - `Shannon`, effective: rewards higher species linearly (vs just Shannon)
@@ -907,6 +931,7 @@ rvc_tbl = rvc_tbl %>%
     eff_shannon = map(data_wide, function(x) exp(diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='shannon'))))
 
 #hist(rvc_tbl$eff_shannon[[1]])
+#boxplot(mean(rvc_tbl$eff_simpson))
 
 ```
 
@@ -914,9 +939,9 @@ rvc_tbl = rvc_tbl %>%
 
 rvc_tbl = rvc_tbl %>%
   mutate(
-    Pielous_evenness = map(data_wide, function(x) diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='shannon')/log(specnumber(x))))
+    evenness = map(data_wide, function(x) diversity(x %>% select(-dataset_id, -mapgridnum, -n_stations), index='shannon')/log(specnumber(x))))
 
-hist(rvc_tbl$Pielous_evenness[[1]])
+#hist(rvc_tbl$evenness[[1]])
 
 ```
 Spatial variants:
@@ -942,6 +967,8 @@ w_mcq = rvc_grp %>%
   nest() %>%
   as.data.frame()
 
+#dim(w_mcq) 15, 2 (needs to be years * species (333))
+
 # wide: common_name x traits
 d_traits = rvc_grp %>% 
   group_by(
@@ -956,6 +983,8 @@ d_traits = rvc_grp %>%
       complexity, levels=c("Low","Medium","High"), ordered=T)) %>%
   arrange(common_name) %>%
   as.data.frame()
+
+#dim(d_traits) 333, 8 (species*traits)
 
 #d_traits
 View(d_traits)
@@ -1018,7 +1047,8 @@ plot(func.dist,horiz=TRUE)
 write.tree(as.phylo(as.hclust(func.dist)),"Functional dendrogram")
 
 #calculate effective Rao's Q 
-func.div=1/(1-apply(w_mcq,1,function(x) t(x) %*% as.matrix(func.dist) %*% x)) #Error in t(x) %*% as.matrix(func.dist) : requires numeric/complex matrix/vector arguments
+function(i){
+  func_div=1/(1-apply(w_mcq,1, function(x) t(x) %*% as.matrix(func.dist)%*% x))}
 
 ```
 - **phylogenetic diversity**
@@ -1027,12 +1057,18 @@ func.div=1/(1-apply(w_mcq,1,function(x) t(x) %*% as.matrix(func.dist) %*% x)) #E
 
 ```{r correlation}
 
+#Create scatterplot matrix of different diversity measures against one another (9" x 9")
+
+               
 #Test significance of Spearman rank correlations (H0 that rho = 0)
-do.call(rbind,lapply(list("richness","evenness","simpson","shannon", "func.div"),function(j) {
-  do.call(rbind,lapply(rev(list("richness","evenness","simpson","shannon","func.div")),function(k) {
+do.call(rbind,lapply(list("richness","evenness","eff_simpson","eff_shannon", "func_div"),function(j) {
+  do.call(rbind,lapply(rev(list("richness","evenness","eff_simpson","eff_shannon","func_div")),function(k) {
     data.frame(title=paste(j,k,sep="~"),
-               correlation=cor.test(alphadiv.list[[2]][,j],alphadiv.list[[2]][,k])$estimate,
-               p.value=cor.test(alphadiv.list[[2]][,j],alphadiv.list[[2]][,k])$p.value) } ) ) } ) ) 
+               correlation=cor.test()$estimate,
+               p.value=cor.test()$p.value) } ) ) } ) ) 
+
+#Examine correlations between matrices using Mantel's test
+mantel.rtest()
 
 ```
 
@@ -1135,7 +1171,7 @@ $$
   
   
   # columns ignored (for now):
-  # basisOfRecord,bottomType,class,country,datasetID,datasetName,depth,dynamicProperties,eventDateRemarks,eventDateTimeZone,family,genus,geodeticDatum,habitat,habitat_cd,higherInstitutionCode,institutionCode,kingdom,latitude,locality,longitude,mapNumber,materialSampleID,maximumDepthInMeters,minimumDepthInMeters,observedMeanLengthInCm,order,ownerInstitutionCode,phylum,protection,quantificationMethod,quantificationName,quantificationStatus,quantificationUnit,,recordedBy,region,sampleRadiusInMeters,Samples,scientificNameAuthorship,scientificNameIDITIS,scientificNameIDWoRMS,species_cd,species_nr,specificEpithet,stateProvince,subregion_nr,taxonRank,time,timeUncertainty,underwaterVisibilityInMeters,vernacularName,verticalDatum,waterBody,waterTemperatureInCelsius,zone_nr
+  # basisOfRecord,bottomType,class,country,datasetID,datasetName,depth,dynamicProperties,eventDateRemarks,eventDateTimeZone,family,genus,geodeticDatum,habitat,habitat_cd,higherInstitutionCode,institutionCode,kingdom,latitude,locality,longitude,mapNumber,materialSampleID,maximumDepthInMeters,minimumDepthInMeters,observedMeanLengthInCm,order,ownerInstitutionCode,phylum,quantificationMethod,quantificationName,quantificationStatus,quantificationUnit,,recordedBy,region,sampleRadiusInMeters,Samples,scientificNameAuthorship,scientificNameIDITIS,scientificNameIDWoRMS,species_cd,species_nr,specificEpithet,stateProvince,subregion_nr,taxonRank,time,timeUncertainty,underwaterVisibilityInMeters,vernacularName,verticalDatum,waterBody,waterTemperatureInCelsius,zone_nr
   
 ```
 
@@ -1187,7 +1223,7 @@ Metadata:
 ```{r SERC Water Quality}
 #read SERC WQ data
 WQ = read_csv('data/SERC_Water_Quality_FKNMS.csv')
-#View(WQ)
+View(WQ)
 
 #summarize by SEGMENT, DATE, LATDEC, LONDEC, TEMP-S, TEMP-B
 temp = WQ %>% 
@@ -1195,10 +1231,12 @@ temp = WQ %>%
     filter(!is.na(bottemp))%>%
     filter(!is.na(surftemp))%>%
     group_by(date, lat, long, segment, surftemp, bottemp) %>%
-    as.data.frame() 
+    as.data.frame() %>%
+    as.Date(date, format = '%m/%d/%y')
     
-    #order(as.Date(date, format='%m/%d/%y')) %>% #ERROR I HATE DATES!!!! 
-    #View(temp)
+dates <- temp[,1]
+(as.Date(dates, format='%m/%d/%y'))
+print(dates) 
       
 ```
 
