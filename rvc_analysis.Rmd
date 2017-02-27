@@ -33,7 +33,11 @@ suppressPackageStartupMessages({
   library(raster)
   #library(dygraphs)
   #library(xts)
+<<<<<<< HEAD
   library(rareNMtests) #sample-based rarefaction curve 
+=======
+  #library(rareNMtesets) #sample-based rarefaction curve 
+>>>>>>> 292e51753b13914c15e2791d4f4ea08ed86317fd
 })
 
 select = dplyr::select
