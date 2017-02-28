@@ -33,7 +33,11 @@ suppressPackageStartupMessages({
   library(raster)
   #library(dygraphs)
   #library(xts)
+<<<<<<< HEAD
+  library(rareNMtests) #sample-based rarefaction curve 
+=======
   #library(rareNMtesets) #sample-based rarefaction curve 
+>>>>>>> 292e51753b13914c15e2791d4f4ea08ed86317fd
 })
 
 select = dplyr::select
@@ -193,16 +197,16 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
   # summarize individual species counts to PSU
   rvc_psu = rvc %>%
     select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, protection,
-           scientificName, quantificationValue) %>%
-    filter(!is.na(station_nr)) %>%
-    group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, protection, scientificName) %>%
+           scientificName, quantificationValue) %>% #selecting data columns from rvc
+    filter(!is.na(station_nr)) %>% #removing n/a
+    group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>% #
     summarise(
-      n_stations = length(unique(station_nr)),
-      q = sum(quantificationValue, na.rm=T) / length(unique(station_nr))) %>%
-    filter(q > 0, !is.na(q)) # filter: NA, 0's
+      n_stations = length(unique(station_nr)), #numbre of SSU within a PSU
+      q_mean_psu = sum(quantificationValue, na.rm=T) / length(unique(station_nr))) %>% #average species count per PSU
+    filter(q_mean_psu > 0, !is.na(q_mean_psu)) # filter: NA, 0's
   
   # mapgrid locations
-  rvc_mg = rvc %>%
+  mg_location = rvc %>%
     group_by(datasetID, mapGridNumber) %>% # 200m x 200m
     summarise(
       latitude = mean(latitude, na.rm=T), 
@@ -210,13 +214,15 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
 
   # summarize species to mapgrid locations
   rvc_spp = rvc_psu %>%
-    left_join(rvc_mg, by=c('datasetID','mapGridNumber')) %>%
+    left_join(mg_location, by=c('datasetID','mapGridNumber')) %>%
     mutate(
       year = year(eventDate)) %>%
-    group_by(year, datasetID,  mapGridNumber, protection, scientificName) %>%
+    group_by(year, datasetID,  mapGridNumber, scientificName) %>%
     summarize(
-      q_mean = mean(q)) %>%
+      q_mean = mean(q)) %>% #average number of individual species i detected in a mapgrid 
     ungroup()
+    #(
+      #q_rel_mg = q_mean_mg/sum(q_mean_mg)) #relative abundance of individual species i per mapgrid 
   
   # add sampling effort per datasetID (with year) and mapGridNumber by n_stations (secondary sampling units)
   rvc_spp = rvc_spp %>%
@@ -293,7 +299,7 @@ rvc_spp = read_csv(rvc_spp_csv)
 
 ```
 
-## species detectability 
+## Species detectability 
 [Buckland et al., 2011. Biodiversity monitoring: the relevance of detectability. Biological diversity: frontiers in measurement and assessment.] 
 Some species are inherently more easily detected than others. 
 The RVC data was designed to detect exploited reef fish and does not do as well at detecting cryptic species (e.g. lionfish, gobies, blennies)
