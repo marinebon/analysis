@@ -33,11 +33,7 @@ suppressPackageStartupMessages({
   library(raster)
   #library(dygraphs)
   #library(xts)
-<<<<<<< HEAD
-  library(rareNMtests) #sample-based rarefaction curve 
-=======
   #library(rareNMtesets) #sample-based rarefaction curve 
->>>>>>> 292e51753b13914c15e2791d4f4ea08ed86317fd
 })
 
 select = dplyr::select
@@ -358,9 +354,15 @@ hist(rvc_tbl$richness[[1]])
   $$
 Where X is the area (size) of the patch or site, and c and z are parameters. Parameter c is uninteresting,
 but z gives the steepness of the species area curve and is a measure of beta diversity.
-```{r  Arrhenius species–area model}
 
+```{r  Arrhenius species–area model}
+data(BCI) # 50 sites x 225 species
+z <- betadiver(BCI, "z")
+
+w = rvc_tbl$data_wide[[1]] # 416 sites (mapgrids) x species
+z = betadiver(w, "z") # I don't understand this output?
 ``` 
+
 - **Evenness**: 
   - `Inverse Simpson Diversity`, 1/D (1 = completely even)
   - `Gini-Simpson Diversity`, 1-D 
@@ -410,7 +412,7 @@ rvc_tbl = rvc_tbl %>%
 - **Functional Diversity**
 Functional Dendogram from Lefcheck (2014) [Dimensions of biodiversity in Chesapeake Bay demersal fishes: patterns and drivers through space and time](http://onlinelibrary.wiley.com/doi/10.1890/ES13-00284.1/abstract) with supplemental [R script](https://figshare.com/articles/Supplement_1_R_script_containing_all_data_analyses_and_functional_phylogenetic_and_taxonomic_trees_in_Newick_format_/3563847)
 
-```{r Functional Dendogram}
+```{r Functional Dendrogram}
 
 # wide: common_name x traits
 d_traits = rvc_grp %>% 
@@ -485,13 +487,16 @@ plot(func.dist,horiz=TRUE)
 #Save plot: 10" x 15"
 
 #Write newick tree
-write.tree(as.phylo(as.hclust(func.dist)),"Functional dendrogram")
+write.tree(as.phylo(as.hclust(func.dist)),"data/dendro_functional.nwk")
 ```
 
 Rao's Q
 
 ```{r Effective Functional Diversity}
 rvc_grp = read_csv('data/rvc_spp_grouped.csv') # View(rvc_grp)
+
+dendro_fxnal = read.tree("data/dendro_functional.nwk")
+plot(dendro_fxnal)
 
 # wide: mapgridnum x common_name -> q_mean
 w_mcq = rvc_grp %>% 
@@ -505,7 +510,11 @@ w_mcq = rvc_grp %>%
 
 #calculate effective Rao's Q 
 function(i){
-  func_div=1/(1-apply(w_mcq,1, function(x) t(x) %*% as.matrix(func.dist)%*% x))}
+  func_div = 1/(1-apply(w_mcq,1, function(x) t(x) %*% as.matrix(func.dist)%*% x)) }
+
+
+fd = FD::dbFD(traits.dist, w_mcq)
+
 rvc_grp = read_csv('data/rvc_spp_grouped.csv') # View(rvc_grp)
 
 ```
