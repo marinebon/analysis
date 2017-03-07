@@ -215,7 +215,7 @@ n_s / max(N_S) \\
 $$
 ```{r normalize, eval=F}
 #feed site (rows) x species (columns)
-
+# Abundance based similarity measures - Bray-Crutis, similiar to normalized Manhattan distances (using abosolute abundances) .... computes compositional similarity between sites 
 d = tribble(
   ~site, ~x, ~y, ~z,
   'a'   , 1,	2,	3,
@@ -232,11 +232,23 @@ m = matrix(c(
     species = c('x','y','z')))
 m
 
-vegdist(m, method='bray', diag=T, upper=T, binary=F)
+#relative abundances 
+r = matrix(c(
+  1,	2,	3,
+  1,	5,	7,
+  0,	2,	3),
+  nrow=3, byrow=T,
+  dimnames = list(
+    sites   = c('a','b','c'),
+    species = c('x','y','z')))
+r
 
-spp = dimnames(m)[['species']]
-bray_ab = sum(abs(m['a', spp] - m['b',spp])) / 
-  sum(m['a',spp] + m['b',spp])
+
+vegdist(r, method='bray', diag=T, upper=T, binary=F)
+
+spp = dimnames(r)[['species']]
+bray_ab = sum(abs(r['a', spp] - r['b',spp])) / 
+  sum(r['a',spp] + r['b',spp])
 bray_ab
 
 d[jk] = (sum abs(x[ij]-x[ik]))/(sum (x[ij]+x[ik]))
@@ -670,6 +682,23 @@ mantel.rtest()
 
 ```
 
+## Species detectability 
+[Buckland et al., 2011. Biodiversity monitoring: the relevance of detectability. Biological diversity: frontiers in measurement and assessment.] 
+Some species are inherently more easily detected than others. 
+The RVC data was designed to detect exploited reef fish and does not do as well at detecting cryptic species (e.g. lionfish, gobies, blennies)
+If detectability is not estimated, then biodiversity will be biased. However ignoring detectability might not be a major problem if the bias is consistant across time and space 
+$$ 
+\hat{p_i} = \hat{N_i}/\sum_{i=1}^S N_i = estimatedproportion of species i in the regoin \\
+
+N_i = n_i/\hat\pi_i = estimated number of indiviudals of species i in the region\\
+
+n_i = number of individuals of species i detected in the region \\
+
+\hat\pi_i = probability of detection of an individual of species i 
+$$
+```{r Account for species detectability}
+
+```
 Columns ignored in RVC (for now):
 
 <div class = "col3">

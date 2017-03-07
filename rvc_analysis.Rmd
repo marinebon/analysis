@@ -33,11 +33,8 @@ suppressPackageStartupMessages({
   library(raster)
   #library(dygraphs)
   #library(xts)
-<<<<<<< HEAD
   library(rareNMtests) #sample-based rarefaction curve 
-=======
-  #library(rareNMtesets) #sample-based rarefaction curve 
->>>>>>> 292e51753b13914c15e2791d4f4ea08ed86317fd
+
 })
 
 select = dplyr::select
@@ -299,23 +296,7 @@ rvc_spp = read_csv(rvc_spp_csv)
 
 ```
 
-## Species detectability 
-[Buckland et al., 2011. Biodiversity monitoring: the relevance of detectability. Biological diversity: frontiers in measurement and assessment.] 
-Some species are inherently more easily detected than others. 
-The RVC data was designed to detect exploited reef fish and does not do as well at detecting cryptic species (e.g. lionfish, gobies, blennies)
-If detectability is not estimated, then biodiversity will be biased. However ignoring detectability might not be a major problem if the bias is consistant across time and space 
-$$ 
-\hat{p_i} = \hat{N_i}/\sum_{i=1}^S N_i = estimatedproportion of species i in the regoin \\
 
-N_i = n_i/\hat\pi_i = estimated number of indiviudals of species i in the region\\
-
-n_i = number of individuals of species i detected in the region \\
-
-\hat\pi_i = probability of detection of an individual of species i 
-$$
-```{r Account for species detectability}
-
-```
 
 ```{r wide}
 rvc_spp = read_csv(rvc_spp_csv) %>%
@@ -346,7 +327,9 @@ rvc_tbl = rvc_tbl %>%
 
 hist(rvc_tbl$richness[[1]])
 ```
- - `Sample-based rarefaction`
+ - `Sample-based rarefaction curve`, computes the expected number of species s when m samples are drawn at random from a set of samples that are representative of an assemblage so that it preserves the spatial structure of the data. 
+- calculate the sample-based rarefraction curvers and their mean and conditional variansce at 95% CI for each set of samples 
+- replot the curves against the x-axis of individual abundance
  
 ```{r Sample-based rarefaction}  
 
@@ -356,8 +339,7 @@ hist(rvc_tbl$richness[[1]])
   $$
   S = cX^z
   $$
-Where X is the area (size) of the patch or site, and c and z are parameters. Parameter c is uninteresting,
-but z gives the steepness of the species area curve and is a measure of beta diversity.
+Where X is the area (size) of the patch or site, S is the number of species, and c and z are parameters. Parameter c is uninteresting,but z gives the steepness of the species area curve and is a measure of beta diversity.
 ```{r  Arrhenius species–area model}
 
 ``` 
