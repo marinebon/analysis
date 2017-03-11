@@ -1,0 +1,420 @@
+---
+title: "FKNMS_Diversity"
+author: "Megan Hepner"
+date: "3/10/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(lubridate)
+  library(raster)
+  library(sp)
+  library(leaflet)
+  library(scales)
+  library(vegan)
+  library(rerddap)
+  library(DT)
+  library(readxl)
+  library(stringr)
+  library(FD)
+  library(clue)
+  library(fpc) #Calls: pamk
+  library(psych)
+  library(raster)
+  library(SpadeR) # Sorenzen index (q=0), Horn Index (q=1), Morisita-Horn Index (q=2) 
+  #library(dygraphs)
+  #library(xts)
+  library(mgcv) #function GAM 
+})
+
+select = dplyr::select
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+The Rao function computes alpha, gamma and beta-components for taxonomic and functional diversity with the Rao quadratic entropy index (Rao 1982)
+                                      
+## INPUTS:                                                                                 
+- abundances: matrix of abundances (c x s) of the s species for the c local communities (subregions)
+- dist.func: matrix (s x s), dist object with pairwise functional trait distances between the s species
+                                                                                      
+## OUTPUTS:                                                                           
+- Species Richness, Effective Gini-Simpson Diversity, Effective Functional diversity (FD). 
+- beta and gamma diversities are calculated for the whole data set and for each pair of subregoins 
+
+```{r Fetch RVC data}
+# csv files to read (since time consuming to create using ERDDAP server calls)
+rvc_rds     = 'data/rvc.rds'
+rvc_mg_csv  = 'data/rvc_mapgrid_locations.csv'
+rvc_spp_csv = 'data/rvc_species_densities.csv'
+
+# assign ERDDAP server URL
+eurl = 'http://gcoos4.tamu.edu:8080/erddap/' # search/index.html?page=1&itemsPerPage=1000&searchFor=Florida+Keys+Reef+Fish+Visual+Census
+
+# only load full rvc.rds if need be (since slow)
+if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv)))){
+  if (!file.exists(rvc_rds)){
+    # create csv files
+    
+    # search for datasets
+    ed_search(query='Reef Visual Census', which='table', url=eurl)
+    # TODO / NOTE: ed_search(page_size, page) DO NOT WORK! ACK!
+    #ed_search(query='Reef Visual Census', which='table', url=eurl, page=2)
+  
+    # iterate over years
+    all = list()
+    
+    ids = c(
+      # Dry Tortugas
+      sprintf('dt%d', c(1999,2000,2004,2006,2008,2010,2012,2014,2016)),
+      # Florida Keys
+      sprintf('fk%d', 1999:2014)) # diff't method 1994:1998
+    
+    for (id in ids){ # id = ids[1]
+    
+      # construct id for dataset
+      csv_id   = sprintf('data/%s.csv', id)
+      csv_vars = sprintf('data/%s_vars.csv', id)
+      cat(sprintf('%s\n', id))
+      
+      if (!file.exists(csv_vars)){
+        # get metadata for dataset
+        m = try(info(id, url=eurl), silent = T)
+        
+        if (class(m) == 'try-error') next
+        cat(sprintf('  writing %s\n', csv_vars))
+        write_csv(m$variables, csv_vars)
+      }
+      
+      if (!file.exists(csv_id)){
+      
+        # get metadata for dataset
+        m = try(info(id, url=eurl), silent = T)
+        
+        # if id not found, then move onto next year
+        if (class(m) == 'try-error'){
+          cat(sprintf('  %s NOT FOUND!\n', id)) # fk2013 NOT FOUND! b/c not there
+          next
+        } 
+        
+        # try fetching data, up to 10x
+        dap_attempts = 1
+        while (dap_attempts < 11){
+          
+          # load data for individual dataset
+          cat('  fetching data', ifelse(dap_attempts > 1, sprintf(': attempt %d\n', dap_attempts), '\n'))
+          d_id = try(tabledap(m, fields=m$variables$variable_name, url=eurl), silent = T)
+          
+          # break out of loop if not giving error
+          if (!'try-error' %in% class(d_id)) break
+          dap_attempts =+ 1
+          cat('  error fetching data\n')
+        }
+      
+        # write to csv
+        cat('  writing to csv\n')
+        d_id %>%
+          tbl_df() %>%
+          write_csv(csv_id)
+        
+      } # end if (!file.exists(csv_id))
+    } # end for (yr in 1994:2014)
+    
+    # bind all csv's into one data frame
+    cat("bind all csv's\n")
+    d = data_frame()
+    for (f in list.files('data','[fk|dt][0-9]+\\.csv', full.names=T)){
+      cat(' ', f,'\n')
+      d_f = read_csv(
+        f, progress=F, trim_ws=T,
+        col_types = cols(
+          protection = col_character()))
+      d = bind_rows(d, d_f)
+    }
+    
+    write_rds(d, rvc_rds) # 4.4 GB
+  
+    # evaluate commonness of columns
+    cat('eval common columns')
+    vars = data_frame()
+    for (f in list.files('data', '[fk|dt][0-9]+_vars\\.csv', full.names = T)){ # f = list.files('data', 'fk[0-9]+_vars\\.csv', full.names = T)[1]
+      cat(f)
+  
+      vars = bind_rows(
+        vars,
+        read_csv(f) %>%
+          mutate(
+            id = str_replace(f, 'data/(.*)_vars\\.csv', '\\1')))
+    }
+    
+    v = vars %>%
+      select(variable_name, data_type, id) %>% # drop actual_range
+      spread(id, data_type)
+    
+  
+  } else {
+    # read data
+    d = read_rds(rvc_rds)
+  }
+  
+  # show columns (with same class) not consistently available across all datasets
+  summary(d)
+  
+  d %>%
+    head() %>%
+    datatable()
+}
+```
+
+## Summarize by Mapgrid & Species
+
+Next, we aggregate to having average density of species from Secondary Sampling Unit (SSU) and Primary Sampling Unit (PSU) to Map grid (200x200m).
+
+```{r aggregate}
+if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
+  
+  # read data fetched from erddap (erddap_rvc.Rmd)
+  rvc = read_rds(rvc_rds)
+    
+  # summarize individual species counts to PSU
+  rvc_psu = rvc %>%
+    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, protection,
+           scientificName, quantificationValue) %>% #selecting data columns from rvc
+    filter(!is.na(station_nr)) %>% #removing n/a
+    group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>% #
+    summarise(
+      n_stations = length(unique(station_nr)), #numbre of SSU within a PSU
+      q_mean_psu = sum(quantificationValue, na.rm=T) / length(unique(station_nr))) %>% #average species count per PSU
+    filter(q_mean_psu > 0, !is.na(q_mean_psu)) # filter: NA, 0's
+  
+  # mapgrid locations
+  mg_location = rvc %>%
+    group_by(datasetID, mapGridNumber) %>% # 200m x 200m
+    summarise(
+      latitude = mean(latitude, na.rm=T), 
+      longitude = mean(longitude, na.rm=T))
+
+  # summarize species to mapgrid locations
+  rvc_spp = rvc_psu %>%
+    left_join(mg_location, by=c('datasetID','mapGridNumber')) %>%
+    mutate(
+      year = year(eventDate)) %>%
+    group_by(year, datasetID,  mapGridNumber, scientificName) %>%
+    summarize(
+      q_mean = mean(q)) %>% #average number of individual species i detected in a mapgrid 
+    ungroup()
+    #(
+      #q_rel_mg = q_mean_mg/sum(q_mean_mg)) #relative abundance of individual species i per mapgrid 
+  
+  # add sampling effort per datasetID (with year) and mapGridNumber by n_stations (secondary sampling units)
+  rvc_spp = rvc_spp %>%
+    left_join(
+      rvc_psu %>%
+        group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, n_stations) %>%
+        summarize(n_spp = n()) %>%
+        group_by(datasetID, mapGridNumber) %>%
+        summarize(
+          n_stations = sum(n_stations)), 
+      by = c('datasetID', 'mapGridNumber'))
+      
+  # write to csv
+  write_csv(rvc_mg, rvc_mg_csv)
+  write_csv(rvc_spp, rvc_spp_csv)
+}
+
+# read in data
+rvc_mg = read_csv(rvc_mg_csv)
+rvc_spp = read_csv(rvc_spp_csv)
+```
+
+## Summarize abundance by Subregion 
+
+ 1. Upper Keys 
+        + latitude  >24.95
+1. Middle Keys
+        + latitude  >24.63 and <= 24.95
+        + longitude >-81.10 and <= -80.45
+1. Lower Keys
+        + latitude  >24.55 and <= 24.63
+        + longitude >-82.65 and <=-81.10
+1. Dry Tortugas 
+        + latitude  >24.55 and <= 24.75
+        + longitude >-83.5 and <=-82.65
+
+```{r Year and Subregion x Species abundance matrix}
+
+subregion = rvc_mg %>%
+  mutate( #add new column called subregion
+    if(latitude >24.95) {<- upper_keys} #define subregions by latitude and longitude 
+      else if (latitude >24.63 & <= 24.95) && (longitude >-81.10 & <= -80.45) {<- middle_keys}
+        else if (latitude  >24.55 & <= 24.63) && (longitude >-82.65 & <=-81.10) {<- lower_keys}
+          else if(latitude  >24.55 & <= 24.75) && (longitude >-83.5 & <=-82.65) {<- dry_tortugas}
+    )
+          
+rvc_spp = read_csv(rvc_spp_csv) %>%
+  select(
+    year, dataset_id = datasetID, 
+    mapgridnum = mapGridNumber, scientific_name = scientificName, 
+    q_mean)
+
+left_join(subregion, rvc_spp) #add column 'subregion' to rvc_spp
+
+group_by(year, subregion, scientificName) #group by year, subregion, and scientific name 
+
+#remove individuals that were not detected to species level, remove spp. 
+abundances = #community by species matrix 
+
+
+```
+
+## Functional distance 
+```{r Functional distance matrix}
+rvc_grp = read_csv('data/rvc_spp_grouped.csv')
+
+# wide: common_name x traits
+d_traits = rvc_grp %>% 
+  group_by(
+    common_name, maxlength, trophic_level, trophic_group, water_column, diel_activity, substrate_type, complexity, gregariousness) %>%
+  summarize(
+    n = n()) %>%
+  select(-n) %>%
+  ungroup() %>%
+  mutate(
+    # ordinal traits
+    complexity = factor(
+      complexity, levels=c("Low","Medium","High"), ordered=T)) %>%
+  arrange(common_name) %>%
+  as.data.frame()
+
+#dim(d_traits) 333, 8 (species*traits)
+
+#d_traits
+View(d_traits)
+
+# conform to: species x traits
+rownames(d_traits) = d_traits$common_name
+d_traits = select(d_traits, -common_name)
+head(d_traits)
+
+#Calculate Gower distances
+traits.dist=gowdis(d_traits,ord="podani")
+
+#Use clustering method to produce ultrametric dendrogramBecause values of Rao's Q can be maximized when fewer than the max number of functional types are present unless distances are ultramtetric 
+
+#to account for sensitivity in clustering use multiple algorithms  (Mouchet et al., 2008) 
+tree_methods = c("single","complete","average","mcquitty","ward.D") #average is best clustering method 
+trees=lapply(tree_methods,function(i) hclust(traits.dist, method=i))
+#par(mfrow=c(3,2))
+#for(i in 1:length(trees)) {plot(trees[[i]])}
+
+#convert trees to ultrametric
+trees.ultra=lapply(trees,function(i) cl_ultrametric(as.hclust(i)))
+
+#Plot each tree
+par(mfrow=c(3,2))
+for (i in 1:length(trees.ultra)) {plot(trees.ultra[[i]])}
+
+#Build the consensus tree (Mouchet et al 2008 Oikos) from package clue 
+ensemble.trees=cl_ensemble(list=trees) #list of clusterings 
+class(ensemble.trees)
+consensus.tree=cl_consensus(ensemble.trees) #synthesizes the information in the elements of a cluster ensemble into a single clustering 
+#plot(consensus.tree)
+
+#Calculate dissimilarity values for each tree using 2-norm (Merigot et al 2010 Ecology) to determine which tree best preserves orignial distances
+all.trees=c(trees.ultra,consensus.tree[1])
+names(all.trees)=c(tree_methods,"consensus")
+trees.dissim=lapply(all.trees,function(i) cl_dissimilarity(i,traits.dist,method="spectral")) #spectral norm (2-norm) of the differences of the ultrametrics
+
+#Identify best tree and isolate
+trees.dissim2=do.call(rbind,trees.dissim)
+min.tree=which.min(trees.dissim2)
+names(all.trees)[min.tree]
+func.dist=all.trees[names(all.trees)==names(all.trees)[min.tree]][[1]]
+
+#Confirm lowest 2-norm value
+cl_dissimilarity(func.dist,traits.dist,method="spectral")
+
+#Scale by the max value so that all values are between 0-1 (clue package)
+func.dist=func.dist/max(func.dist)
+
+#Plot the best tree
+par(mfrow=c(1,1))
+par(mar=c(3,1,0,16))
+plot(func.dist,horiz=TRUE)
+#Save plot: 10" x 15"
+
+#Write newick tree
+write.tree(as.phylo(as.hclust(func.dist)),"data/dendro_functional.nwk")
+
+#Visualize species' differences in multivariate trait space
+#Perform k-means clustering with no a priori specification for k
+traits.kclus=pamk(traits.dist,krange=2:10)
+# #Perform multidimensional scaling on functional dendrogram
+traits_nmds=metaMDS(traits.dist,k=traits.kclus$nc,trymax=500)
+# #Plot in two dimensions
+par(mar=c(4,4,1,1))
+ordiplot(traits_nmds,type="n")
+#Assign colors to different groups
+groups=levels(factor(traits.kclus$pamobject$clustering))
+points.symbols=15:16
+points.colors=c("firebrick3","cornflowerblue")
+for(i in seq_along(groups)) {
+   points(traits_nmds$points[traits.kclus$pamobject$clustering==groups[i],],
+          pch=points.symbols[i],col=points.colors[i],cex=1.4) }
+ ordispider(traits_nmds,factor(traits_kclus$pamobject$clustering),label=F)
+ ordihull(traits_nmds,factor(traits.kclus$pamobject$clustering),lty="dotted")
+ orditorp(traits_nmds,dis="sites",pcex=0,air=0.5,col="grey10",cex=0.8)
+``` 
+
+## Compute Simpson and Functional Diversity for Alpha (subregions) and Gamma (FKNMS)
+
+```{r Alpha diversity - Subregion}
+
+# species abudance by subregion 
+subregion_abun<-apply(abundances,1,sum)
+
+# species relative abundances by subregion 
+subregion_relabun<-abundances/subregion_abun 
+
+# species richness by subregion
+subregion_richness<-apply(abundances,1, function(x) {length(which(x>0))} )  
+
+# functional diversity (effective number of species) by subregion
+subregion_func_div=1/(1-apply(subregion_relabun, 1, function(x) t(x) %*%  func.dist %*% x))
+
+# Gini-Simpson diversity (effective number of species) by subregion
+species.dist=matrix(1,ncol(abundances),ncol(abundances))-diag(rep(1,ncol(abundances))) 
+subregion_simpson_div=1/(1-apply(subregion_relabun,1, function(x) t(x) %*% species.dist %*% x))
+
+```
+
+```{r Gamma Diversity - FKNMS}
+
+# species regional abudance 
+regional_abun<-apply(abundances,2,sum)
+
+ # regional species richness
+regional_richness<-apply(abundances,2,function(x) {length(which(x>0))} ) 
+
+#regional species relative abundance
+regional_relabun <- regional_abun/sum(regional_abun)  
+
+# regional functional diversity (effective number of species)
+regional.func.div=1/(1-apply(regional_relabun, 1, function(x) t(x) %*%  func.dist %*% x))
+
+# regional Gini-Simpson diversity (effective number of species)
+regional.simpson.div=1/(1-apply(regional_relabun,1,function(x) t(x) %*% species.dist %*% x))
+
+```
+
