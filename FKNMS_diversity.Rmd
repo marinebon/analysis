@@ -267,15 +267,15 @@ rvc_spp = read_csv(rvc_spp_csv) %>%
     year, dataset_id = datasetID, 
     mapgridnum = mapGridNumber, scientific_name = scientificName, 
     q_mean)
-
-left_join(subregion, rvc_spp) #add column 'subregion' to rvc_spp
-
-group_by(year, subregion, scientificName) #group by year, subregion, and scientific name 
-
-#remove individuals that were not detected to species level, remove spp. 
-abundances = #community by species matrix 
+  left_join(subregion, by('mapgridnum')) #add column 'subregion' to rvc_spp
+  group_by(year, subregion, scientificName) #group by year, subregion, and scientific name 
+  spread()
 
 
+abundances = #community by species matrix (year and subregion by species with abundance values)
+
+#TODO: check if individuals that were not detected to species level were removed before computing diversity indices 
+  
 ```
 
 ## Functional distance 
