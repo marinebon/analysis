@@ -214,9 +214,7 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
     summarize(
       q_mean = mean(q)) %>% #average number of individual species i detected in a mapgrid 
     ungroup()
-    #(
-      #q_rel_mg = q_mean_mg/sum(q_mean_mg)) #relative abundance of individual species i per mapgrid 
-  
+
   # add sampling effort per datasetID (with year) and mapGridNumber by n_stations (secondary sampling units)
   rvc_spp = rvc_spp %>%
     left_join(
@@ -236,6 +234,7 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
 # read in data
 rvc_mg = read_csv(rvc_mg_csv)
 rvc_spp = read_csv(rvc_spp_csv)
+
 ```
 
 ## Summarize abundance by Subregion 
@@ -254,25 +253,29 @@ rvc_spp = read_csv(rvc_spp_csv)
 
 ```{r Year and Subregion x Species abundance matrix}
 
-subregion = rvc_mg %>%
-  mutate( #add new column called subregion
-    if(latitude >24.95) {<- upper_keys} #define subregions by latitude and longitude 
-      else if (latitude >24.63 & <= 24.95) && (longitude >-81.10 & <= -80.45) {<- middle_keys}
-        else if (latitude  >24.55 & <= 24.63) && (longitude >-82.65 & <=-81.10) {<- lower_keys}
-          else if(latitude  >24.55 & <= 24.75) && (longitude >-83.5 & <=-82.65) {<- dry_tortugas}
-    )
-          
-rvc_spp = read_csv(rvc_spp_csv) %>%
-  select(
-    year, dataset_id = datasetID, 
-    mapgridnum = mapGridNumber, scientific_name = scientificName, 
-    q_mean)
-  left_join(subregion, by('mapgridnum')) #add column 'subregion' to rvc_spp
-  group_by(year, subregion, scientificName) #group by year, subregion, and scientific name 
-  spread()
+#Filter by subregions 
+upper_keys <- filter(rvc_mg, 
+                    latitude > 24.95)
+middle_keys <- filter(rvc_mg, 
+                    latitude >24.63 & latitude <= 24.95, 
+                    longitude >= -81.10 & longitude <= -80.45)
+lower_keys <- filter(rvc_mg, 
+                    latitude >24.55 & latitude <= 24.63, 
+                    longitude >= -82.65 & longitude <= -81.10)
+dry_tortugas <- filter(rvc_mg, 
+                    latitude >24.55 & latitude <= 24.75, 
+                    longitude >= -83.5 & longitude <= -82.65)
 
+left_join() #add column 'subregions' with observations: UK, MK, LK, DT
+group_by() #year, subregion, scientificname
+effective_simpson = map(
+      data_wide, 
+      function(x) 1 / (1 - diversity(x, %>% (select(), index='simpson')))))# calculate effective simpson diversity for each year and subregion 
+  
+ggplot(data = x, mapping = aes(x = year, y = effective_simpson)) + 
+  geom_point(mapping = aes(color = subregion)) + 
+  geom_smooth() 
 
-abundances = #community by species matrix (year and subregion by species with abundance values)
 
 #TODO: check if individuals that were not detected to species level were removed before computing diversity indices 
   
