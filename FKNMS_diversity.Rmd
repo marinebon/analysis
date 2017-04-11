@@ -217,16 +217,16 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
     ungroup()
 
   # add sampling effort per datasetID (with year) and mapGridNumber by n_stations (secondary sampling units)
-  rvc_spp = rvc_spp %>%
-    left_join(
-      rvc_psu %>%
-        group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, n_stations) %>%
-        summarize(n_spp = n()) %>%
-        group_by(datasetID, mapGridNumber) %>%
-        summarize(
-          n_stations = sum(n_stations)), 
-      by = c('datasetID', 'mapGridNumber'))
-      
+  # rvc_spp = rvc_spp %>%
+  #   left_join(
+  #     rvc_psu %>%
+  #       group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, n_stations) %>%
+  #       summarize(n_spp = n()) %>%
+  #       group_by(datasetID, mapGridNumber) %>%
+  #       summarize(
+  #         n_stations = sum(n_stations)), 
+  #     by = c('datasetID', 'mapGridNumber'))
+  #     
   # write to csv
   write_csv(rvc_mg, rvc_mg_csv)
   write_csv(rvc_spp, rvc_spp_csv)
@@ -290,8 +290,6 @@ mg_p_cord_tbl = mg_cord_q %>%
 
 map = purrr::map
 #map function: the first argument to all map functions is the vector to operate on. The second argument, .f specifies what to do with each piece. map takes a vector and returns a list
-
-#x = mg_cord_tbl$sp_abun_sr[[1]]
 
 x = mean()
 apply(x %>% select(-c(1:6)), 2, mean)
@@ -378,6 +376,19 @@ qplot(year, eff_simpson_avg_mg, data = mg_cord_tbl, color = subregion, geom = c(
 
 #TODO: check if individuals that were not detected to species level were removed before computing diversity indices 
   
+```
+
+```{r simpson data wide with lat long}
+
+#Want data in long format with columns: year, subregion, mapgridnumber, lat, long, strata, protection, richness, simpson, shannon 
+
+taxa2 <- separate(data = taxa2, col = taxa2, into = c('kingdom','phylum','class','order','family','genus','species'), sep = ",")
+
+simpson_wide <- str_replace_all(mg_cord_tbl$effective_simpson_sr, "[c]", "=") 
+  
+trial <- separate(data = mg_cord_tbl, col = sp_abun_sr, into = c('datasetID', 'mapGridNumber', 'latitude', 'longitude', 'protection' ), sep = ",")
+
+
 ```
 
 ```{r shannon diversity}
