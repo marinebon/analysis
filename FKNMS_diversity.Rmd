@@ -312,6 +312,8 @@ mg_cord_tbl =  mg_cord_tbl %>%
       function(x){
         x = apply(x %>% select(-c(1:6)), 2, mean)
         1 / (1 - diversity(x, index='simpson'))}))
+
+mg_cord_tbl
 # TODO: Why/how are eff_simpson_avg_mg & eff_simpson_avg_mg different? Which to use?
 
  # ggplot(data = mg_cord_tbl, mapping = aes(x = year, y = eff_simpson_avg_mg)) + 
@@ -382,11 +384,7 @@ qplot(year, eff_simpson_avg_mg, data = mg_cord_tbl, color = subregion, geom = c(
 
 #Want data in long format with columns: year, subregion, mapgridnumber, lat, long, strata, protection, richness, simpson, shannon 
 
-taxa2 <- separate(data = taxa2, col = taxa2, into = c('kingdom','phylum','class','order','family','genus','species'), sep = ",")
-
-simpson_wide <- str_replace_all(mg_cord_tbl$effective_simpson_sr, "[c]", "=") 
-  
-trial <- separate(data = mg_cord_tbl, col = sp_abun_sr, into = c('datasetID', 'mapGridNumber', 'latitude', 'longitude', 'protection' ), sep = ",")
+trial4 = mg_cord_tbl %>% unnest(effective_simpson_sr)
 
 
 ```
