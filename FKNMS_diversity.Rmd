@@ -44,7 +44,7 @@ When you click the **Knit** button a document will be generated that includes bo
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
                                       
-## OUTPUTS:                                                                           
+## Outputs:                                                                           
 - Species richness, Effective Simpson diversity, Effective Shannon diversity, and Functional diversity (FD) by domain, subregion, level of protection and mapgrid in the Florida Keys National Marine Sanctuary
 - Funcitonal dendogram 
 - environmental varibales from SERC 
@@ -185,8 +185,7 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
     
   # summarize individual species counts to PSU
   rvc_psu = rvc %>%
-    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, protection,
-           scientificName, quantificationValue) %>% #selecting data columns from rvc
+    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, protection,    mapNumber,scientificName, quantificationValue) %>% #selecting data columns from rvc
     filter(!is.na(station_nr)) %>% #removing n/a
     group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>% #
     summarise(
@@ -222,7 +221,9 @@ rvc_spp = read_csv(rvc_spp_csv)
 
 ```
 
-# Prep data for domain biodiversity metrics 
+##Biodiversity metrics for FKNMS Domain 
+
+# Prep data for domain Florida Keys biodiversity metrics 
 
 ```{r wide}
 rvc_spp_wide = read_csv(rvc_spp_csv) %>%
@@ -238,9 +239,8 @@ rvc_tbl = rvc_spp_wide %>%
     data_wide  = map(data, ~ spread(data=.x, scientific_name, q_mean, fill=0)))
 ```
 
-##Biodiversity metrics for FKNMS Domain 
-
-```{r Species Richness for FKNMS Domain}  
+#Species richness from 1999 - 2016 in the FKNMS
+```{r Species Richness for FKNMS domain}  
 
 rvc_tbl = rvc_tbl %>%
   mutate(
@@ -253,10 +253,10 @@ rvc_tbl = rvc_tbl %>%
         x = apply(x %>% select(-c(1:3)), 2, mean) #speacies abundances average across mapgrids by year
         specnumber(x)}))
 
-#hist(rvc_tbl$richness[[1]])
 ```
 
-```{r Effective Simpson Diversity for FKNMS Domain}
+#Simpson diversity as effective number of species from 1999 - 2016 in the FKNMS
+```{r Effective Simpson Diversity for FKNMS domain}
 # Effective Simpson of the entire FKNMS 
 rvc_tbl = rvc_tbl %>%
   mutate(
@@ -268,17 +268,11 @@ rvc_tbl = rvc_tbl %>%
        function(x){
           x = apply(x %>% select(-c(1:3)), 2, mean) #speacies abundances average across mapgrids by year
           1 / (1 - diversity(x, index='simpson'))}))
-
-ggplot(data = rvc_tbl, aes(x = year, y = eff_simpson_avg)) +
-  geom_smooth(fill = "darkturquoise", colour = "magenta", size = 2, method = "lm") +
-  geom_point() +
-  ggtitle("Simpson Diversity") +
-  xlab("Year") +
-  ylab("Effective Number of Species") 
   
 ``` 
 
-```{r Effective Shannon diversity for FKNMS Domain}
+#Shannon diversity as effective number of species from 1999 - 2016 in the FKNMS
+```{r Effective Shannon diversity for FKNMS domain}
 
 rvc_tbl = rvc_tbl %>%
   mutate(
@@ -288,6 +282,23 @@ rvc_tbl = rvc_tbl %>%
       function(x){
         x = apply(x %>% select(-c(1:3)), 2, mean) #speacies abundances average across mapgrids by year
         exp(diversity(x, index='shannon'))})) 
+
+```
+
+#Functional diversity as effective number of species from 1999 - 2016 in the FKNMS
+```{r Effective Functional diversity for FKNMS domain}
+
+```
+
+FKNMS domain diversity plots
+```{r FKNMS domain plots}
+
+ggplot(data = rvc_tbl, aes(x = year, y = eff_simpson_avg)) +
+  geom_smooth(fill = "darkturquoise", colour = "magenta", size = 2, method = "lm") +
+  geom_point() +
+  ggtitle("Simpson Diversity") +
+  xlab("Year") +
+  ylab("Effective Number of Species") 
 
 ggplot(data = rvc_tbl, aes(x = year, y = eff_shannon_avg)) +
   geom_smooth(fill = "darkturquoise", colour = "magenta", size = 2, method = "lm") +
@@ -304,17 +315,11 @@ ggplot(data = rvc_tbl, aes(x = year)) +
   ggtitle("FKNMS Diversity of Reef Fish Overtime") +
   labs(x = "Year", y = "Effective Number of Species", color = "Diversity") +
   scale_color_hue(labels = c("Richness", "Simpson", "Shannon"))
-
-
-```
-
-```{r Effective Functional diversity for FKNMS Domain}
-
 ```
 
 ## Biodiversity metrics by subregion 
 
-# Summarize abundance by subregion 
+Summarize abundance by subregion 
 
  1. Upper Keys 
         + latitude  >24.95
@@ -328,12 +333,12 @@ ggplot(data = rvc_tbl, aes(x = year)) +
         + latitude  >24.55 and <= 24.75
         + longitude >-83.5 and <=-82.65
 
-```{r Year and Subregion x Species abundance matrix}
+```{r Define subregion}
 
-mg_cord_q <- left_join(rvc_mg, rvc_spp) #added lat, long: datasetID, mapGridNumber, latitude, longitude, year, protection
+mg_subregion <- left_join(rvc_mg, rvc_spp) #added lat, long: datasetID, mapGridNumber, latitude, longitude, year, protection
 
 #add column 'subregion' with observations 'UK, MK, LK, DT' 
-mg_cord_q = mg_cord_q %>% 
+mg_subregion = mg_subregion %>% 
   mutate(
     subregion = ifelse (
       latitude > 24.95, 
@@ -348,14 +353,13 @@ mg_cord_q = mg_cord_q %>%
             latitude >24.55 && latitude <= 24.75 & longitude >= -83.5 && longitude <= -82.65,
             "dry_tortugas")))))
 
-mg_cord_tbl = mg_cord_q %>% #year, subregion, data(list)
+subregion_tbl = mg_subregion %>% #year, subregion, data(list)
   group_by(year,subregion)  %>%
   nest() #year, subregion, data(list of 8 variables: datasetID mapGridNumber latitude longitude protection scientificName q_mean n_stations)
 
 ```
 
-# Prep data for subregion biodiversity metrics
-```{r subregion data wide}
+```{r Prep data for subregion biodiversity metrics}
 
 map = purrr::map
 #map function: the first argument to all map functions is the vector to operate on. The second argument, .f specifies what to do with each piece. map takes a vector and returns a list
@@ -363,17 +367,18 @@ map = purrr::map
 x = mean()
 apply(x %>% select(-c(1:6)), 2, mean)
 
-mg_cord_tbl = mg_cord_tbl %>%
+subregion_tbl = subregion_tbl %>%
   mutate(
     sp_abun_sr = map( #datasetID,mapGridNumber, lat, long, protection, n_stations, all species detected 
       data, #datasetID,mapGridNumber, lat, long, protection, scientificName, q_mean, n_stations
       ~ spread(data=.x, scientificName, q_mean, fill=0))) #key=scientificName, value = q_mean
-    
+
 ```
 
+#Species richness from 1999 - 2016 in the FKNMS by subregion
 ```{r Species richness by subregion}
 
-mg_cord_tbl = mg_cord_tbl %>%
+subregion_tbl = subregion_tbl %>%
   mutate(
     sp_richness_sr = map(
       sp_abun_sr, 
@@ -386,9 +391,10 @@ mg_cord_tbl = mg_cord_tbl %>%
 
 ```
 
+#Simpson diversity as effective number of species from 1999 - 2016 in the FKNMS by subregion
 ```{r Effective Simpson diversity by subregion}
 
-mg_cord_tbl =  mg_cord_tbl %>%
+subregion_tbl =  subregion_tbl %>%
   mutate(
     effective_simpson_sr = map( #effective simpson by mapgrid 
       sp_abun_sr, 
@@ -406,7 +412,35 @@ mg_cord_tbl =  mg_cord_tbl %>%
 
 # TODO: Why/how are eff_simpson_avg_mg & eff_simpson_avg_mg different? Which to use?
 
-ggplot(data = mg_cord_tbl, mapping = aes(x = year, y = eff_simpson_avg_mg, color = subregion, group = subregion)) + 
+#TODO: check if individuals that were not detected to species level were removed before computing diversity indices 
+  
+```
+
+#Shannon diversity as effective number of species from 1999 - 2016 in the FKNMS by subregion
+```{r Effective Shannon diversity by subregion}
+
+subregion_tbl =  subregion_tbl %>%
+  mutate(
+    effective_shannon_sr = map(
+      sp_abun_sr, 
+      function(x) exp(diversity(x %>% select(-c(1:6)), index='shannon'))),
+    eff_shannon_avg_mg = map_dbl(
+      sp_abun_sr, 
+      function(x){
+        x = apply(x %>% select(-c(1:6)), 2, mean)
+        exp(diversity(x, index='shannon'))}))
+
+```
+
+#Functional diversity as effective number of species from 1999 - 2016 in the FKNMS by subregion
+```{r Effective Functional diversity by subregion}
+
+```
+
+#Plots of diversity by subregion 
+```{r Subregion plots}
+
+ggplot(data = subregion_tbl, mapping = aes(x = year, y = eff_simpson_avg_mg, color = subregion, group = subregion)) + 
   geom_point() + 
   geom_line() +
   facet_wrap(~ subregion, nrow = 1) +
@@ -414,7 +448,7 @@ ggplot(data = mg_cord_tbl, mapping = aes(x = year, y = eff_simpson_avg_mg, color
   labs(x = "Year", y = "Effective Number of Species", colour = "Subregions") +
   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 
-ggplot(data = mg_cord_tbl, aes(x = year, y = eff_simpson_avg_mg, subregion, group = subregion)) +
+ggplot(data = subregion_tbl, aes(x = year, y = eff_simpson_avg_mg, subregion, group = subregion)) +
   geom_smooth(fill = "darkturquoise", colour = "magenta", size = 1, method = "lm") +
   geom_point() +
   facet_grid(subregion ~ .) +
@@ -424,7 +458,7 @@ ggplot(data = mg_cord_tbl, aes(x = year, y = eff_simpson_avg_mg, subregion, grou
   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 
 #plot using loess - what does loess do??
-qplot(year, eff_simpson_avg_mg, data = mg_cord_tbl, color = subregion, geom = c("point", "smooth"), method = "loess", se = T) +
+qplot(year, eff_simpson_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "loess", se = T) +
   facet_grid(subregion ~ .) +
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   ggtitle("Simpson Diversity") +
@@ -433,7 +467,7 @@ qplot(year, eff_simpson_avg_mg, data = mg_cord_tbl, color = subregion, geom = c(
 
 #plot using lm 
 library(splines)
-qplot(year, eff_simpson_avg_mg, data = mg_cord_tbl, color = subregion, geom = c("point", "smooth"), method = "lm", formula = y ~ ns(x, 2), se = T) +
+qplot(year, eff_simpson_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "lm", formula = y ~ ns(x, 2), se = T) +
   facet_grid(subregion ~ .) +
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   ggtitle("Simpson Diversity") +
@@ -441,7 +475,7 @@ qplot(year, eff_simpson_avg_mg, data = mg_cord_tbl, color = subregion, geom = c(
   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 
 #plot using gam
-qplot(year, eff_simpson_avg_mg, data = mg_cord_tbl, color = subregion, geom = c("point", "smooth"), method = "gam") +
+qplot(year, eff_simpson_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "gam") +
   facet_grid(subregion ~ .) +
   theme_update(plot.title = element_text(hjust = 0.5)) +
   ggtitle("Simpson Diversity") +
@@ -451,30 +485,8 @@ qplot(year, eff_simpson_avg_mg, data = mg_cord_tbl, color = subregion, geom = c(
   ylim(5, 25) +
   xlim(1999, 2016)
 
-#TODO: check if individuals that were not detected to species level were removed before computing diversity indices 
-  
-```
-
-```{r Effective Shannon diversity by subregion}
-
-mg_cord_tbl =  mg_cord_tbl %>%
-  mutate(
-    effective_shannon_sr = map(
-      sp_abun_sr, 
-      function(x) exp(diversity(x %>% select(-c(1:6)), index='shannon'))),
-    # effective shannon averaged across mapgrids
-    # eff_shannon_avg_mg = map_dbl(
-    #   effective_shannon_sr,
-    #   ~ mean(.x, na.rm=T)),
-    # effective shannon using avg species abundance across whole subregion-year
-    eff_shannon_avg_mg = map_dbl(
-      sp_abun_sr, 
-      function(x){
-        x = apply(x %>% select(-c(1:6)), 2, mean)
-        exp(diversity(x, index='shannon'))}))
-
 #whole FKNMS Shannon 
- ggplot(data = mg_cord_tbl, mapping = aes(x = year, y = eff_shannon_avg_mg)) + 
+ ggplot(data = subregion_tbl, mapping = aes(x = year, y = eff_shannon_avg_mg)) + 
   geom_point(mapping = aes(color = subregion)) + 
   geom_smooth() +
   ggtitle("Shannon Diversity in the FKNMS") +
@@ -482,7 +494,7 @@ mg_cord_tbl =  mg_cord_tbl %>%
   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
  
 #lm plot 
-qplot(year, eff_shannon_avg_mg, data = mg_cord_tbl, color = subregion, geom = c("point", "smooth"), method = "lm") +
+qplot(year, eff_shannon_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "lm") +
   facet_grid(subregion ~ .) +
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   ggtitle("Shannon Diversity") +
@@ -492,7 +504,7 @@ qplot(year, eff_shannon_avg_mg, data = mg_cord_tbl, color = subregion, geom = c(
   #theme(axis.text.x = element_text(angle = 45))
 
 #gam plot
-qplot(year, eff_shannon_avg_mg, data = mg_cord_tbl, color = subregion, geom = c("point", "smooth"), method = "gam") +
+qplot(year, eff_shannon_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "gam") +
   facet_grid(subregion ~ .) +
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
   ggtitle("Shannon Diversity") +
@@ -500,7 +512,7 @@ qplot(year, eff_shannon_avg_mg, data = mg_cord_tbl, color = subregion, geom = c(
   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 
 #simpson and shannon 
-ggplot(data = mg_cord_tbl, aes(x = year)) +
+ggplot(data = subregion_tbl, aes(x = year)) +
   geom_point(aes(y = eff_simpson_avg_mg, color = subregion), color = "darkturquoise") +
   geom_point(aes(y = eff_shannon_avg_mg, color = subregion), color = "magenta") +
   geom_line(aes(y = eff_simpson_avg_mg, color = subregion), color = "darkturquoise") +
@@ -512,7 +524,7 @@ ggplot(data = mg_cord_tbl, aes(x = year)) +
   theme(legend.position = "bottom")
 
 #richness, simpson, shannon by subregion
-ggplot(data = mg_cord_tbl, aes(x = year)) +
+ggplot(data = subregion_tbl, aes(x = year)) +
   geom_point(aes(y = richness_sr, color = subregion), color = "green") +
   geom_point(aes(y = eff_simpson_avg_mg, color = subregion), color = "darkturquoise") +
   geom_point(aes(y = eff_shannon_avg_mg, color = subregion), color = "magenta") +
@@ -522,12 +534,7 @@ ggplot(data = mg_cord_tbl, aes(x = year)) +
   facet_grid(subregion ~ .) + 
   ggtitle("FKNMS Diversity by Subregion") +
   labs(x = "Year", y = "Effective Number of Species", color = "Diversity") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys")) 
-
-```
-
-```{r Effective Functional diversity by subregion}
-
+  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 ```
 
 ## Biodiversity metrics by level of protection
@@ -563,48 +570,150 @@ ggplot(data = mg_cord_tbl, aes(x = year)) +
     27 Not Protected              [unprotected]
     28 Not Protected              [unprotected]
 
-```{r prep data for level of protection}
+```{r Define level's of protection}
 
-# mg_protection = mg_cord_q %>% #year, subregion, data(list)
-#   group_by(year, protection)  %>%
-#   nest() #year, subregion, protection, data(list of 8 variables: datasetID mapGridNumber latitude longitude protection scientificName q_mean n_stations)
-# 
-# x = mean()
-# apply(x %>% select(-c(1:6)), 2, mean)
-# 
-# mg_protection = mg_protection %>%
-#   mutate(
-#     sp_abun_prot = map( #datasetID,mapGridNumber, lat, long, protection, n_stations, all species detected 
-#       data, #datasetID,mapGridNumber, lat, long, protection, scientificName, q_mean, n_stations
-#       ~ spread(data=.x, scientificName, q_mean, fill=0))) 
-# 
-# mg_protection =  mg_protection %>%
-#   mutate(
-#     effective_simpson_prot = map( #effective simpson by mapgrid 
-#       sp_abun_prot, 
-#       function(x) 1 / (1 - diversity(x %>% select(-c(1:6)), index='simpson'))),
-#     eff_simpson_avg_prot = map_dbl(
-#       sp_abun_prot, 
-#       function(x){
-#         x = apply(x %>% select(-c(1:6)), 2, mean)
-#         1 / (1 - diversity(x, index='simpson'))}))
-# 
-# # TODO: Why/how are eff_simpson_avg_mg & eff_simpson_avg_mg different? Which to use?
-# 
-# ggplot(data = mg_protection, mapping = aes(x = year, y = eff_simpson_avg_prot, color = protection, group = protection)) + 
-#   geom_point() + 
-#   geom_line() +
-#   facet_wrap(~ protection, nrow = 4) +
-#   ggtitle("Simpson Diversity in the FKNMS") +
-#   labs(x = "Year", y = "Effective Number of Species", colour = "Protection") +
-#   scale_color_hue(labels = c("Protected", "Kinda Protected", "Not Protected"))
-# 
-# qplot(year, eff_simpson_avg_prot, data = mg_protection, color = subregion, geom = c("point", "smooth"), method = "loess", se = T) +
-#   facet_grid(subregion ~ .) +
-#   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
-#   ggtitle("Simpson Diversity") +
-#   labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
-#   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
+# TODO: change map_Number = mpa_number
+
+#add column 'managed' with observations unprotected and protected 
+mpa_tbl = mg_subregion %>% 
+  mutate(
+    managed = ifelse (
+      protection == 0 | 2,
+      "unprotected",
+      ifelse(
+        protection == 1,
+        "protected")))
+
+# add column 'mpa_name' with: Sanctuary Preservation Areas (18) Ecological Reserves (3) Special Use/Research Only (4)
+mpa_tbl = mpa_tbl %>% 
+  mutate(   
+    mpa_name = ifelse(
+      mpa_number = 0 | 26 | 27 | 28, 
+      "unprotected",
+      ifelse(
+        mpa_number = 1, "Carysfort_SPA",
+        ifelse(
+          mpa_number = 2, "Elbow_SPA",
+          ifelse(
+          mpa_number = 3, "Key_Largo_Dry_Rocks_SPA",
+          ifelse(
+          mpa_number = 4, "Grecian_Rocks_SPA",
+          ifelse(
+          mpa_number = 5, "French_SPA",
+          ifelse(
+          mpa_number = 6, "Molasses_SPA",
+          ifelse(
+          mpa_number = 7, "Conch_Reef_SPA",
+          ifelse(
+          mpa_number = 8, "Conch_RO",
+          ifelse(
+          mpa_number = 9, "Davis_SPA",
+          ifelse(
+          mpa_number = 10, "Hen_Chickens_SPA",
+          ifelse(
+          mpa_number = 11, "Cheeca_Rocks_SPA",
+          ifelse(
+          mpa_number = 12, "Alligator_SPA",
+          ifelse(
+          mpa_number = 13, "Tennessee_RO",
+          ifelse(
+          mpa_number = 14, "Coffins_Patch_SPA",
+          ifelse(
+          mpa_number = 15, "Sombrero_SPA",
+          ifelse(
+          mpa_number = 16, "Looe_Key_SPA",
+          ifelse(
+          mpa_number = 17, "Looe_Key_RO",
+          ifelse(
+          mpa_number = 18, "Newfound_Harbor_SPA",
+          ifelse(
+          mpa_number = 19, "Eastern_Sambo_RO",
+          ifelse(
+          mpa_number = 20, "Western_Sambo_SPA",
+          ifelse(
+          mpa_number = 21, "East_Dry_Rocks_SPA",
+          ifelse(
+          mpa_number = 22, "Rock_Key_SPA",
+          ifelse(
+          mpa_number = 23, "Sand_Key_SPA",
+          ifelse(
+          mpa_number = 24, "Dry_Tortugas_North_ER",
+          ifelse(
+          mpa_number = 25, "Dry_Tortugas_South_ER"
+      )))))))))))))))))))))))))))
+
+mpa_tbl = mpa_tbl %>% #year, subregion, data(list)
+  group_by(year, managed)  %>%
+  nest() #year, subregion, data(list of 8 variables: datasetID mapGridNumber latitude longitude protection scientificName q_mean n_stations)
+
+        
+```
+
+```{r Prep data by level of protection}
+
+x = mean()
+apply(x %>% select(-c(1:6)), 2, mean)
+
+mpa_tbl = mpa_tbl %>%
+  mutate(
+    sp_abun_prot = map( #datasetID,mapGridNumber, lat, long, protection, n_stations, all species detected 
+      data, #datasetID,mapGridNumber, lat, long, protection, scientificName, q_mean, n_stations
+      ~ spread(data=.x, scientificName, q_mean, fill=0))) #key=scientificName, value = q_mean
+```
+
+#Species richness from 1999 - 2016 in the FKNMS by level of protection
+```{r Species richness by level of protection}
+
+mpa_tbl = mpa_tbl %>%
+  mutate(
+    sp_richness_mpa = map(
+      sp_abun_prot, 
+      function(x) specnumber(x %>% select(-c(1:6)))), #compute species richness by sr #removing columns datasetID, mapGridNumber, latitude, longitude, protection, n_stations 
+    richness_mpa = map_dbl(
+      sp_abun_prot, 
+      function(x){
+        x = apply(x %>% select(-c(1:6)), 2, mean)
+       specnumber(x)})) 
+
+```
+
+#Simpson diversity as effective number of species from 1999 - 2016 in the FKNMS by level of protection
+```{r Effective Simpson diversity by level of protection}
+mpa_tbl =  mpa_tbl %>%
+  mutate(
+    effective_simpson_mpa = map( #effective simpson by mapgrid 
+      sp_abun_prot, 
+      function(x) 1 / (1 - diversity(x %>% select(-c(1:6)), index='simpson'))),
+    eff_simpson_avg_mpa = map_dbl(
+      sp_abun_prot, 
+      function(x){
+        x = apply(x %>% select(-c(1:6)), 2, mean)
+        1 / (1 - diversity(x, index='simpson'))}))
+```
+
+#Shannon diversity as effective number of species from 1999 - 2016 in the FKNMS by level of protection
+```{r Effective Shannon diversity by level of protection}
+
+mpa_tbl =  mpa_tbl %>%
+  mutate(
+    effective_shannon_mpa = map( #effective simpson by mapgrid 
+      sp_abun_prot, 
+      function(x) exp(diversity(x %>% select(-c(1:6)), index='shannon'))),
+    eff_shannon_avg_mpa = map_dbl(
+      sp_abun_prot, 
+      function(x){
+        x = apply(x %>% select(-c(1:6)), 2, mean)
+        exp(diversity(x %>% select(-c(1:6)), index='shannon'))}))
+
+```
+
+#Functional diversity as effective number of species from 1999 - 2016 in the FKNMS by level of protection
+```{r Effective Functional diversity by level of protection}
+
+```
+
+#Plots of diversity in the FKNMS by level of protection
+```{r plots by level of protection}
 
 ```
 
@@ -613,7 +722,7 @@ ggplot(data = mg_cord_tbl, aes(x = year)) +
 
 #Unnest tibble so the data is in long format with columns: year, datasetID, mapGridNumber, latitude, longitude, protection, subregion, richness, simpson, shannon 
 
-mg = mg_cord_tbl %>% unnest(sp_abun_sr, sp_richness_sr, effective_simpson_sr, effective_shannon_sr) #year, subregion, eff_simpson_avg_mg, eff_shannon_avg_mg, sp_richness_sr, effective_simpson_sr, effective_shannon_sr, datasetID, mapGridNumber, latitude, longitude, protection, n_stations, and all species
+mg = subregion_tbl %>% unnest(sp_abun_sr, sp_richness_sr, effective_simpson_sr, effective_shannon_sr) #year, subregion, eff_simpson_avg_mg, eff_shannon_avg_mg, sp_richness_sr, effective_simpson_sr, effective_shannon_sr, datasetID, mapGridNumber, latitude, longitude, protection, n_stations, and all species
 
 map_mg = mg %>%
   select(year, datasetID, mapGridNumber, latitude, longitude, protection, subregion, sp_richness_sr, effective_simpson_sr, effective_shannon_sr)
@@ -621,7 +730,7 @@ map_mg = mg %>%
 
 ```
 
-## Functional distance 
+## Functional distance (modified from Lefcheck)
 ```{r Functional distance matrix}
 rvc_grp = read_csv('data/rvc_spp_grouped.csv')
 
@@ -724,30 +833,6 @@ Trait matrix visualization
 [http://jkunst.com/r/pokemon-visualize-em-all/]
 ```{r trait visualization}
 
-tsne_fish_traits <- d_traits %>% 
-  select(maxlength, trophic_level, trophic_group, water_column, diel_activity,
-         substrate_type, complexity, gregariousness) %>%
-  map(function(x){
-    ifelse(is.na(x), "NA", x)
-  }) %>% 
-  as.data.frame() %>% 
-  tbl_df() %>% 
-  model.matrix(~., data = .) %>% 
-  as.data.frame() %>% 
-  tbl_df() %>% 
-  .[-1] %>% 
-  tsne(perplexity = 10)
-
-d_traits <- d_traits %>% 
-  mutate(x = tsne_fish_traits[, 1],
-         y = tsne_fish_traits[, 2])
-
-dfcenters <- d_traits %>% 
-  group_by(trophic_group, water_column) %>% 
-  summarise(cx = mean(x),
-            cy = mean(y),
-            sdcx = sd(x),
-            sdcy = sd(y))
 ```
 
 ## Compute Simpson and Functional Diversity for Alpha (subregions) and Gamma (FKNMS)
