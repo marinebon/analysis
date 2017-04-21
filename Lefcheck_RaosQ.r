@@ -66,16 +66,16 @@ for (j in 1:dim(abundances)[2] )
 } # end of if
 
 #  species richness and total abundances in local communities
-abloc<-apply(abundances,1,sum) 
-nbsploc<-apply(abundances,1,function(x) {length(which(x>0))} )
+abloc<-apply(abundances,1,sum) #MH: species abundance per sample  
+nbsploc<-apply(abundances,1,function(x) {length(which(x>0))} ) #MH: species richness per sample 
 
 # relative abundances inside each local community
-locabrel<-abundances/abloc
+locabrel<-abundances/abloc #MH: species relative abundance per sample 
 
-# alpha diversity
-Qalpha=apply(locabrel, 1, function(x) t(x) %*%  functdist %*% x)
+# alpha diversity for each sample 
+Qalpha=apply(locabrel, 1, function(x) t(x) %*%  functdist %*% x) #MH: alpha diversity for each sample; for taxonomic diversity the Simpson index is calculated
 
-#Wc
+#Wc (weigthing factor)
 Wc = abloc/sum(abloc)
 
 # abundance-weighted mean alpha
@@ -85,19 +85,19 @@ mQalpha<-as.numeric(Qalpha%*%abloc/sum(abloc) )
 if(w==T) {
 	# abundance-weighted mean alpha
 	mQalpha<-as.numeric(Qalpha%*%abloc/sum(abloc) )
-	totabrel<-apply(abundances,2,sum)/sum(abundances) 
+	totabrel<-apply(abundances,2,sum)/sum(abundances) #MH: relative abundance of species for region
 	Qalpha = Qalpha*Wc
 }	
 
-# Rao's original definition: mean of Pi
+# Rao's original definition: mean of Pi - species regional relative abundance 
 else {
 	mQalpha<-mean(Qalpha)
-	totabrel<-apply(locabrel,2,mean)  
+	totabrel<-apply(locabrel,2,mean)  #MH: species average relative abundance for region 
 	}
 
 
 # gamma diversity
-Qgamma<-( totabrel %*% functdist %*% totabrel ) [1]
+Qgamma<-( totabrel %*% functdist %*% totabrel ) [1] #MH: applies average relative abundance to get gamma diversity 
 
 # beta diversity
 Qbeta<-as.numeric( Qgamma-mQalpha )
