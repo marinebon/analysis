@@ -244,7 +244,14 @@ rvc_tbl = rvc_spp_wide %>%
 
 rvc_tbl = rvc_tbl %>%
   mutate(
-    richness = map(data_wide, function(x) specnumber(x %>% select(-dataset_id, -mapgridnum, -n_stations))))
+    richness = map(
+      data_wide, 
+      function(x) specnumber(x %>% select(-dataset_id, -mapgridnum, -n_stations))),
+    richness_avg = map_dbl(  
+      data_wide, 
+      function(x){
+        x = apply(x %>% select(-c(1:3)), 2, mean) #speacies abundances average across mapgrids by year
+        specnumber(x)}))
 
 #hist(rvc_tbl$richness[[1]])
 ```
@@ -289,12 +296,14 @@ ggplot(data = rvc_tbl, aes(x = year, y = eff_shannon_avg)) +
   xlab("Year") +
   ylab("Effective Number of Species") 
 
+#richness, simpson, shannon plotted on same graph 
 ggplot(data = rvc_tbl, aes(x = year)) +
+  geom_point(aes(y = richness_avg, color = "blue")) + geom_line(aes(y = richness_avg, color = "blue")) +
   geom_point(aes(y = eff_simpson_avg, color = "magenta")) + geom_line(aes(y = eff_simpson_avg, color = "magenta")) +
   geom_point(aes(y = eff_shannon_avg, color = "green")) + geom_line(aes(y = eff_shannon_avg, color = "green")) +
   ggtitle("FKNMS Diversity of Reef Fish Overtime") +
   labs(x = "Year", y = "Effective Number of Species", color = "Diversity") +
-  scale_color_hue(labels = c("Simpson", "Shannon"))
+  scale_color_hue(labels = c("Richness", "Simpson", "Shannon"))
 
 
 ```
@@ -368,7 +377,12 @@ mg_cord_tbl = mg_cord_tbl %>%
   mutate(
     sp_richness_sr = map(
       sp_abun_sr, 
-      function(x) specnumber(x %>% select(-c(1:6))))) #compute species richness by sr #removing columns datasetID, mapGridNumber, latitude, longitude, protection, n_stations 
+      function(x) specnumber(x %>% select(-c(1:6)))), #compute species richness by sr #removing columns datasetID, mapGridNumber, latitude, longitude, protection, n_stations 
+    richness_sr = map_dbl(
+      sp_abun_sr, 
+      function(x){
+        x = apply(x %>% select(-c(1:6)), 2, mean)
+       specnumber(x)})) 
 
 ```
 
@@ -497,6 +511,19 @@ ggplot(data = mg_cord_tbl, aes(x = year)) +
   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys")) +
   theme(legend.position = "bottom")
 
+#richness, simpson, shannon by subregion
+ggplot(data = mg_cord_tbl, aes(x = year)) +
+  geom_point(aes(y = richness_sr, color = subregion), color = "green") +
+  geom_point(aes(y = eff_simpson_avg_mg, color = subregion), color = "darkturquoise") +
+  geom_point(aes(y = eff_shannon_avg_mg, color = subregion), color = "magenta") +
+  geom_line(aes(y = richness_sr, color = subregion), color = "green") +
+  geom_line(aes(y = eff_simpson_avg_mg, color = subregion), color = "darkturquoise") +
+  geom_line(aes(y = eff_shannon_avg_mg, color = subregion), color = "magenta") +
+  facet_grid(subregion ~ .) + 
+  ggtitle("FKNMS Diversity by Subregion") +
+  labs(x = "Year", y = "Effective Number of Species", color = "Diversity") +
+  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys")) 
+
 ```
 
 ```{r Effective Functional diversity by subregion}
@@ -504,8 +531,38 @@ ggplot(data = mg_cord_tbl, aes(x = year)) +
 ```
 
 ## Biodiversity metrics by level of protection
-- 'protection' refers only to DT data. 0 = not protected, 1 = protected, T North Ecological Reserve, 2 = protected, Dry Tortugas Park 
-- "mapNumber" = "mpaNumner" : use MPA 0 - 27 
+- 'protection'; 0 = not protected, 1 = protected, 2 = not protected 
+- "mapNumber" = "mpaNumner"; 0 - 28 
+    0	Unprotected                 [unprotected]
+    1	Carysfort                   [Carysfort Sanctuary Preservation Area]
+    2	Elbow                       [Elbow Sanctuary Preservation Area]
+    3	Key_Largo_Dry_Rocks         [Key Largo Dry Rocks Sanctuary Preservation Area]
+    4	Grecian_Rocks               [Grecian Rocks Sanctuary Preservation Area]
+    5	French                      [French Reef Sanctuary Preservation Area]
+    6	Molasses                    [Molasses Reef Sanctuary Preservation Area]
+    7	Conch_Reef                  [Conch Reef Sanctuary Preservation Area]
+    8	Conch_RO                    [Conch Reef Research Only Area]
+    9	Davis                       [Davis Reef Sanctuary Preservation Area]
+    10 Hen_Chickens               [Hen and Chickens Sanctuary Preservation Area]
+    11 Cheeca_Rocks               [Cheeca Rocks Sanctuary Preservation Area]
+    12 Alligator                  [Alligator Reef Sanctuary Preservation Area]
+    13 Tennessee                  [Tennesse Reef Research Only Area]
+    14 Coffins_Patch              [Coffins Patch Sanctuary Preservation Area]
+    15 Sombrero                   [Sombrero Key Sanctuary Preservation Area]
+    16 Looe_Key                   [Looe Key Sanctuary Preservation Area]
+    17 Looe_RO                    [Looe Key Research Only Area]
+    18 Newfound_Harbor            [Newfound Harbor Key Sanctuary Preservation Area]
+    19 East_Sambo                 [Eastern Sambo Research Only Area]
+    20 West_Sambo                 [Western Sambo Ecological Reserve]
+    21 East_Dry_Rocks             [Eastern Dry Rocks Sanctuary Preservation Area]
+    22 Rock_Key                   [Rock Key Sanctuary Preservation Area]
+    23 Sand_Key                   [Sand Key Sanctuary Preservation Area]
+    24 North Ecological Reserve   [Tortugas North Ecological Reserve]
+    25 South Ecological Reserve   [Tortugas South Ecological Reserve]
+    26 Research Natural Area      [unprotected]
+    27 Not Protected              [unprotected]
+    28 Not Protected              [unprotected]
+
 ```{r prep data for level of protection}
 
 # mg_protection = mg_cord_q %>% #year, subregion, data(list)
