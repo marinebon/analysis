@@ -837,6 +837,7 @@ for(i in seq_along(groups)) {
  ordispider(traits_nmds,factor(traits_kclus$pamobject$clustering),label=F)
  ordihull(traits_nmds,factor(traits.kclus$pamobject$clustering),lty="dotted")
  orditorp(traits_nmds,dis="sites",pcex=0,air=0.5,col="grey10",cex=0.8)
+ 
 ``` 
 
 Trait matrix visualization 
