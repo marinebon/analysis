@@ -295,7 +295,7 @@ FKNMS domain diversity plots
 ```{r FKNMS domain plots}
 
 ggplot(data = rvc_tbl, aes(x = year, y = eff_simpson_avg)) +
-  geom_smooth(fill = "darkturquoise", colour = "magenta", size = 2, method = "lm") +
+  geom_smooth(fill = "darkturquoise", colour = "magenta", size = 2, method = "lm") + #99% CI
   geom_point() +
   ggtitle("Simpson Diversity") +
   xlab("Year") +
@@ -738,6 +738,11 @@ mg = subregion_tbl %>% unnest(sp_abun_sr, sp_richness_sr, effective_simpson_sr, 
 map_mg = mg %>%
   select(year, datasetID, mapGridNumber, latitude, longitude, protection, subregion, sp_richness_sr, effective_simpson_sr, effective_shannon_sr)
 
+library(maptools)
+library(rgdal)
+
+trial <- readOGR('./Florida_Keys_Benthics_USGS_2006')
+
 ```
 
 ## Functional distance (modified from Lefcheck)
@@ -760,9 +765,6 @@ d_traits = rvc_grp %>%
   as.data.frame()
 
 #dim(d_traits) 333, 8 (species*traits)
-
-#d_traits
-View(d_traits)
 
 # conform to: species x traits
 rownames(d_traits) = d_traits$common_name
