@@ -30,6 +30,7 @@ suppressPackageStartupMessages({
   library(mgcv) #function GAM 
   library(RColorBrewer) 
   library(tsne)
+  library(splines)
 })
 
 select = dplyr::select
@@ -286,7 +287,7 @@ rvc_tbl = rvc_tbl %>%
 ```
 
 #Functional diversity as effective number of species from 1999 - 2016 in the FKNMS
-```{r Effective Functional diversity for FKNMS domain}
+```{r Effective Functional diversity for FKNMS domain, eval = F}
 
 ```
 
@@ -364,8 +365,8 @@ subregion_tbl = mg_subregion %>% #year, subregion, data(list)
 map = purrr::map
 #map function: the first argument to all map functions is the vector to operate on. The second argument, .f specifies what to do with each piece. map takes a vector and returns a list
 
-x = mean()
-apply(x %>% select(-c(1:6)), 2, mean)
+#x = mean()
+#apply(x %>% select(-c(1:6)), 2, mean)
 
 subregion_tbl = subregion_tbl %>%
   mutate(
@@ -458,15 +459,14 @@ ggplot(data = subregion_tbl, aes(x = year, y = eff_simpson_avg_mg, subregion, gr
   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 
 #plot using loess - what does loess do??
-qplot(year, eff_simpson_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "loess", se = T) +
-  facet_grid(subregion ~ .) +
-  theme(strip.background = element_blank(), strip.text.y = element_blank()) +
-  ggtitle("Simpson Diversity") +
-  labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
+# qplot(year, eff_simpson_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "loess") +
+#   facet_grid(subregion ~ .) +
+#   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
+#   ggtitle("Simpson Diversity") +
+#   labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
+#   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 
 #plot using lm 
-library(splines)
 qplot(year, eff_simpson_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "lm", formula = y ~ ns(x, 2), se = T) +
   facet_grid(subregion ~ .) +
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
@@ -582,65 +582,66 @@ mpa_tbl = mg_subregion %>%
       "unprotected",
       ifelse(
         protection == 1,
-        "protected")))
+        "protected")))   #only getting unprotected and no protected ??
 
 # add column 'mpa_name' with: Sanctuary Preservation Areas (18) Ecological Reserves (3) Special Use/Research Only (4)
-mpa_tbl = mpa_tbl %>% 
-  mutate(   
-    mpa_name = ifelse(
-      mpa_number = 0 | 26 | 27 | 28, 
-      "unprotected",
-      ifelse(
-        mpa_number = 1, "Carysfort_SPA",
-        ifelse(
-          mpa_number = 2, "Elbow_SPA",
-          ifelse(
-          mpa_number = 3, "Key_Largo_Dry_Rocks_SPA",
-          ifelse(
-          mpa_number = 4, "Grecian_Rocks_SPA",
-          ifelse(
-          mpa_number = 5, "French_SPA",
-          ifelse(
-          mpa_number = 6, "Molasses_SPA",
-          ifelse(
-          mpa_number = 7, "Conch_Reef_SPA",
-          ifelse(
-          mpa_number = 8, "Conch_RO",
-          ifelse(
-          mpa_number = 9, "Davis_SPA",
-          ifelse(
-          mpa_number = 10, "Hen_Chickens_SPA",
-          ifelse(
-          mpa_number = 11, "Cheeca_Rocks_SPA",
-          ifelse(
-          mpa_number = 12, "Alligator_SPA",
-          ifelse(
-          mpa_number = 13, "Tennessee_RO",
-          ifelse(
-          mpa_number = 14, "Coffins_Patch_SPA",
-          ifelse(
-          mpa_number = 15, "Sombrero_SPA",
-          ifelse(
-          mpa_number = 16, "Looe_Key_SPA",
-          ifelse(
-          mpa_number = 17, "Looe_Key_RO",
-          ifelse(
-          mpa_number = 18, "Newfound_Harbor_SPA",
-          ifelse(
-          mpa_number = 19, "Eastern_Sambo_RO",
-          ifelse(
-          mpa_number = 20, "Western_Sambo_SPA",
-          ifelse(
-          mpa_number = 21, "East_Dry_Rocks_SPA",
-          ifelse(
-          mpa_number = 22, "Rock_Key_SPA",
-          ifelse(
-          mpa_number = 23, "Sand_Key_SPA",
-          ifelse(
-          mpa_number = 24, "Dry_Tortugas_North_ER",
-          ifelse(
-          mpa_number = 25, "Dry_Tortugas_South_ER"
-      )))))))))))))))))))))))))))
+
+# mpa_tbl = mpa_tbl %>% 
+#   mutate(   
+#     mpa_name = ifelse(
+#       mpa_number = 0 | 26 | 27 | 28, 
+#       "unprotected",
+#       ifelse(
+#         mpa_number = 1, "Carysfort_SPA",
+#         ifelse(
+#           mpa_number = 2, "Elbow_SPA",
+#           ifelse(
+#           mpa_number = 3, "Key_Largo_Dry_Rocks_SPA",
+#           ifelse(
+#           mpa_number = 4, "Grecian_Rocks_SPA",
+#           ifelse(
+#           mpa_number = 5, "French_SPA",
+#           ifelse(
+#           mpa_number = 6, "Molasses_SPA",
+#           ifelse(
+#           mpa_number = 7, "Conch_Reef_SPA",
+#           ifelse(
+#           mpa_number = 8, "Conch_RO",
+#           ifelse(
+#           mpa_number = 9, "Davis_SPA",
+#           ifelse(
+#           mpa_number = 10, "Hen_Chickens_SPA",
+#           ifelse(
+#           mpa_number = 11, "Cheeca_Rocks_SPA",
+#           ifelse(
+#           mpa_number = 12, "Alligator_SPA",
+#           ifelse(
+#           mpa_number = 13, "Tennessee_RO",
+#           ifelse(
+#           mpa_number = 14, "Coffins_Patch_SPA",
+#           ifelse(
+#           mpa_number = 15, "Sombrero_SPA",
+#           ifelse(
+#           mpa_number = 16, "Looe_Key_SPA",
+#           ifelse(
+#           mpa_number = 17, "Looe_Key_RO",
+#           ifelse(
+#           mpa_number = 18, "Newfound_Harbor_SPA",
+#           ifelse(
+#           mpa_number = 19, "Eastern_Sambo_RO",
+#           ifelse(
+#           mpa_number = 20, "Western_Sambo_SPA",
+#           ifelse(
+#           mpa_number = 21, "East_Dry_Rocks_SPA",
+#           ifelse(
+#           mpa_number = 22, "Rock_Key_SPA",
+#           ifelse(
+#           mpa_number = 23, "Sand_Key_SPA",
+#           ifelse(
+#           mpa_number = 24, "Dry_Tortugas_North_ER",
+#           ifelse(
+#           mpa_number = 25, "Dry_Tortugas_South_ER"
+#       )))))))))))))))))))))))))))
 
 mpa_tbl = mpa_tbl %>% #year, subregion, data(list)
   group_by(year, managed)  %>%
@@ -651,9 +652,6 @@ mpa_tbl = mpa_tbl %>% #year, subregion, data(list)
 
 #Prep data by level of protection 
 ```{r Prep data by level of protection}
-
-x = mean()
-apply(x %>% select(-c(1:6)), 2, mean)
 
 mpa_tbl = mpa_tbl %>%
   mutate(
@@ -669,12 +667,12 @@ mpa_tbl = mpa_tbl %>%
   mutate(
     sp_richness_mpa = map(
       sp_abun_prot, 
-      function(x) specnumber(x %>% select(-c(1:6)))), #compute species richness by sr #removing columns datasetID, mapGridNumber, latitude, longitude, protection, n_stations 
+      function(x) specnumber(x %>% select(-c(1:7)))), #compute species richness by sr #removing columns datasetID, mapGridNumber, latitude, longitude, protection, n_stations 
     richness_mpa = map_dbl(
       sp_abun_prot, 
       function(x){
-        x = apply(x %>% select(-c(1:6)), 2, mean)
-       specnumber(x)})) 
+        x = apply(x %>% select(-c(1:7)), 2, mean)
+       specnumber(x)}))  #shit ton of NA's "returning NAargument is not numeric or logical"
 
 ```
 
@@ -684,11 +682,11 @@ mpa_tbl =  mpa_tbl %>%
   mutate(
     effective_simpson_mpa = map( #effective simpson by mapgrid 
       sp_abun_prot, 
-      function(x) 1 / (1 - diversity(x %>% select(-c(1:6)), index='simpson'))),
+      function(x) 1 / (1 - diversity(x %>% select(-c(1:7)), index='simpson'))),
     eff_simpson_avg_mpa = map_dbl(
       sp_abun_prot, 
       function(x){
-        x = apply(x %>% select(-c(1:6)), 2, mean)
+        x = apply(x %>% select(-c(1:7)), 2, mean)
         1 / (1 - diversity(x, index='simpson'))}))
 ```
 
@@ -699,12 +697,12 @@ mpa_tbl =  mpa_tbl %>%
   mutate(
     effective_shannon_mpa = map( #effective simpson by mapgrid 
       sp_abun_prot, 
-      function(x) exp(diversity(x %>% select(-c(1:6)), index='shannon'))),
+      function(x) exp(diversity(x %>% select(-c(1:7)), index='shannon'))),
     eff_shannon_avg_mpa = map_dbl(
       sp_abun_prot, 
       function(x){
-        x = apply(x %>% select(-c(1:6)), 2, mean)
-        exp(diversity(x %>% select(-c(1:6)), index='shannon'))}))
+        x = apply(x %>% select(-c(1:7)), 2, mean)
+        exp(diversity(x, index='shannon'))}))
 
 ```
 
@@ -715,6 +713,18 @@ mpa_tbl =  mpa_tbl %>%
 
 #Plots of diversity in the FKNMS by level of protection
 ```{r plots by level of protection}
+
+ggplot(data = mpa_tbl, aes(x = year)) +
+  geom_point(aes(y = richness_mpa, color = managed), color = "green") +
+  geom_point(aes(y = eff_simpson_avg_mpa, color = managed), color = "darkturquoise") +
+  geom_point(aes(y = eff_shannon_avg_mpa, color = managed), color = "magenta") +
+  geom_line(aes(y = richness_mpa, color = managed), color = "green") +
+  geom_line(aes(y = eff_simpson_avg_mpa, color = managed), color = "darkturquoise") +
+  geom_line(aes(y = eff_shannon_avg_mpa, color = managed), color = "magenta") +
+  facet_grid(managed ~ .) + 
+  ggtitle("FKNMS Diversity by Subregion") +
+  labs(x = "Year", y = "Effective Number of Species", color = "Diversity") +
+  scale_color_hue(labels = c("Protected", "Unprotected"))
 
 ```
 
@@ -727,7 +737,6 @@ mg = subregion_tbl %>% unnest(sp_abun_sr, sp_richness_sr, effective_simpson_sr, 
 
 map_mg = mg %>%
   select(year, datasetID, mapGridNumber, latitude, longitude, protection, subregion, sp_richness_sr, effective_simpson_sr, effective_shannon_sr)
-
 
 ```
 
