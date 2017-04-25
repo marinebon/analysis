@@ -579,7 +579,7 @@ ggplot(data = subregion_tbl, aes(x = year)) +
 
 ## Biodiversity metrics by level of protection
 - 'protection'; 0 = not protected, 1 = protected, 2 = not protected 
-- "mapNumber" = "mpaNumner"; 0 - 28 
+- "mapNumber" = "mpaNumber"; 0 - 28 
     0	Unprotected                 [unprotected]
     1	Carysfort                   [Carysfort Sanctuary Preservation Area]
     2	Elbow                       [Elbow Sanctuary Preservation Area]
@@ -610,7 +610,7 @@ ggplot(data = subregion_tbl, aes(x = year)) +
     27 Not Protected              [unprotected]
     28 Not Protected              [unprotected]
 
-```{r Define level's of protection}
+```{r Define levels of protection}
 
 # TODO: change map_Number = mpa_number
 
@@ -620,9 +620,9 @@ mpa_tbl = mg_subregion %>%
     managed = ifelse (
       protection == 0 | 2,
       "unprotected",
-      ifelse(
-        protection == 1,
-        "protected")))   #only getting unprotected and no protected ??
+       ifelse(
+         protection == 1,
+         "protected"))   #only getting unprotected and no protected ??
 
 # add column 'mpa_name' with: Sanctuary Preservation Areas (18) Ecological Reserves (3) Special Use/Research Only (4)
 
@@ -705,10 +705,10 @@ mpa_tbl = mpa_tbl %>%
 
 mpa_tbl = mpa_tbl %>%
   mutate(
-    sp_richness_mpa = map(
+    richness_mpa = map(
       sp_abun_prot, 
       function(x) specnumber(x %>% select(-c(1:7)))), #compute species richness by sr #removing columns datasetID, mapGridNumber, latitude, longitude, protection, n_stations 
-    richness_mpa = map_dbl(
+    richness_mpa_avg = map_dbl(
       sp_abun_prot, 
       function(x){
         x = apply(x %>% select(-c(1:7)), 2, mean)
@@ -720,10 +720,10 @@ mpa_tbl = mpa_tbl %>%
 ```{r Effective Simpson diversity by level of protection}
 mpa_tbl =  mpa_tbl %>%
   mutate(
-    effective_simpson_mpa = map( #effective simpson by mapgrid 
+    eff_simpson_mpa = map( #effective simpson by mapgrid 
       sp_abun_prot, 
       function(x) 1 / (1 - diversity(x %>% select(-c(1:7)), index='simpson'))),
-    eff_simpson_avg_mpa = map_dbl(
+    eff_simpson_mpa_avg = map_dbl(
       sp_abun_prot, 
       function(x){
         x = apply(x %>% select(-c(1:7)), 2, mean)
@@ -735,10 +735,10 @@ mpa_tbl =  mpa_tbl %>%
 
 mpa_tbl =  mpa_tbl %>%
   mutate(
-    effective_shannon_mpa = map( #effective simpson by mapgrid 
+    eff_shannon_mpa = map( #effective simpson by mapgrid 
       sp_abun_prot, 
       function(x) exp(diversity(x %>% select(-c(1:7)), index='shannon'))),
-    eff_shannon_avg_mpa = map_dbl(
+    eff_shannon_mpa_avg = map_dbl(
       sp_abun_prot, 
       function(x){
         x = apply(x %>% select(-c(1:7)), 2, mean)
@@ -755,16 +755,21 @@ mpa_tbl =  mpa_tbl %>%
 ```{r plots by level of protection}
 
 ggplot(data = mpa_tbl, aes(x = year)) +
-  geom_point(aes(y = richness_mpa, color = managed), color = "green") +
-  geom_point(aes(y = eff_simpson_avg_mpa, color = managed), color = "darkturquoise") +
-  geom_point(aes(y = eff_shannon_avg_mpa, color = managed), color = "magenta") +
-  geom_line(aes(y = richness_mpa, color = managed), color = "green") +
-  geom_line(aes(y = eff_simpson_avg_mpa, color = managed), color = "darkturquoise") +
-  geom_line(aes(y = eff_shannon_avg_mpa, color = managed), color = "magenta") +
+  geom_point(aes(y = richness_mpa_avg, color = "richness_mpa_avg")) +
+  geom_point(aes(y = eff_simpson_mpa_avg, color = "eff_simpson_mpa_avg")) +
+  geom_point(aes(y = eff_shannon_mpa_avg, color = "eff_shannon_mpa_avg")) +
+  geom_line(aes(y = richness_mpa_avg, color = "richness_mpa_avg")) +
+  geom_line(aes(y = eff_simpson_mpa_avg, color = "eff_simpson_mpa_avg")) +
+  geom_line(aes(y = eff_shannon_mpa_avg, color = "eff_shannon_mpa_avg")) +
   facet_grid(managed ~ .) + 
-  ggtitle("FKNMS Diversity by Subregion") +
+  ggtitle("Reef Fish Diversity by MPA") +
   labs(x = "Year", y = "Effective Number of Species", color = "Diversity") +
-  scale_color_hue(labels = c("Protected", "Unprotected"))
+  scale_colour_manual(values = c("darkturquoise", "magenta", "blue"), labels=c("Shannon diversity", "Simpson diversity", "Richness")) +
+  ggtitle("Reef Fish Biodiversity by Subregion in the FKNMS") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Year", y = "Effective Number of Species", color = "Diversity index") +
+  scale_x_continuous(breaks = c(1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016)) +
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300))
 
 ```
 
