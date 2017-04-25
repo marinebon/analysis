@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-rm(list = ls()) #clears workspace
+#rm(list = ls()) #clears workspace
 
 suppressPackageStartupMessages({
   library(tidyverse)
@@ -294,6 +294,7 @@ rvc_tbl = rvc_tbl %>%
 FKNMS domain diversity plots
 ```{r FKNMS domain plots}
 
+#simpson diveristy with lm 
 ggplot(data = rvc_tbl, aes(x = year, y = eff_simpson_avg)) +
   geom_smooth(fill = "darkturquoise", colour = "magenta", size = 2, method = "lm") + #99% CI
   geom_point() +
@@ -301,21 +302,61 @@ ggplot(data = rvc_tbl, aes(x = year, y = eff_simpson_avg)) +
   xlab("Year") +
   ylab("Effective Number of Species") 
 
-ggplot(data = rvc_tbl, aes(x = year, y = eff_shannon_avg)) +
-  geom_smooth(fill = "darkturquoise", colour = "magenta", size = 2, method = "lm") +
+#simpson diversity with loess 
+ggplot(data = rvc_tbl, aes(x = year, y = eff_simpson_avg)) +
+  geom_smooth(fill = "darkturquoise", colour = "magenta", size = 2, method = "loess") + 
   geom_point() +
-  ggtitle("Shannon Diversity") +
+  ggtitle("Simpson Diversity") +
   xlab("Year") +
-  ylab("Effective Number of Species") 
+  ylab("Effective Number of Species") +
+  scale_x_continuous(breaks = c(1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016))+
+  scale_y_continuous(breaks = c(5, 10, 15, 20, 25, 30, 35, 40))
 
-#richness, simpson, shannon plotted on same graph 
+#simson and shannon by domain with loess 
 ggplot(data = rvc_tbl, aes(x = year)) +
-  geom_point(aes(y = richness_avg, color = "blue")) + geom_line(aes(y = richness_avg, color = "blue")) +
-  geom_point(aes(y = eff_simpson_avg, color = "magenta")) + geom_line(aes(y = eff_simpson_avg, color = "magenta")) +
-  geom_point(aes(y = eff_shannon_avg, color = "green")) + geom_line(aes(y = eff_shannon_avg, color = "green")) +
-  ggtitle("FKNMS Diversity of Reef Fish Overtime") +
-  labs(x = "Year", y = "Effective Number of Species", color = "Diversity") +
-  scale_color_hue(labels = c("Richness", "Simpson", "Shannon"))
+  geom_point(aes(y = eff_simpson_avg, color = "eff_simpson_avg")) + geom_smooth(aes(y = eff_simpson_avg, color = "eff_simpson_avg"), method = "loess") +
+  geom_point(aes(y = eff_shannon_avg, color = "eff_shannon_avg")) + geom_smooth(aes(y = eff_shannon_avg, color = "eff_shannon_avg"), method = "loess") +
+  ggtitle("Reef Fish Biodiversity in the FKNMS") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Year", y = "Effective Number of Species", color = "Diversity index") +
+  scale_colour_manual(values = c("blue", "magenta"), labels=c("Shannon diversity", "Simpson diversity")) +
+  scale_x_continuous(breaks = c(1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016))+
+  scale_y_continuous(breaks = c(5, 10, 15, 20, 25, 30, 35, 40))
+
+#simson and shannon by domain with lm
+ggplot(data = rvc_tbl, aes(x = year)) +
+  geom_point(aes(y = eff_simpson_avg, color = "eff_simpson_avg")) + geom_smooth(aes(y = eff_simpson_avg, color = "eff_simpson_avg"), method = "lm") +
+  geom_point(aes(y = eff_shannon_avg, color = "eff_shannon_avg")) + geom_smooth(aes(y = eff_shannon_avg, color = "eff_shannon_avg"), method = "lm") +
+  ggtitle("Reef Fish Biodiversity in the FKNMS") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Year", y = "Effective Number of Species", color = "Diversity index") +
+  scale_colour_manual(values = c("blue", "magenta"), labels=c("Shannon diversity", "Simpson diversity")) +
+  scale_x_continuous(breaks = c(1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016))+
+  scale_y_continuous(breaks = c(5, 10, 15, 20, 25, 30, 35, 40))
+
+#simson and shannon by domain 
+ggplot(data = rvc_tbl, aes(x = year)) +
+  geom_point(aes(y = eff_simpson_avg, color = "eff_simpson_avg")) + geom_line(aes(y = eff_simpson_avg, color = "eff_simpson_avg")) +
+  geom_point(aes(y = eff_shannon_avg, color = "eff_shannon_avg")) + geom_line(aes(y = eff_shannon_avg, color = "eff_shannon_avg")) +
+  ggtitle("Reef Fish Biodiversity in the FKNMS") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Year", y = "Effective Number of Species", color = "Diversity index") +
+  scale_colour_manual(values = c("darkturquoise", "magenta"), labels=c("Shannon diversity", "Simpson diversity")) +
+  scale_x_continuous(breaks = c(1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016))+
+  scale_y_continuous(breaks = c(5, 10, 15, 20, 25, 30, 35, 40))
+
+#richness, simpson, shannon by domain 
+ggplot(data = rvc_tbl, aes(x = year)) +
+  geom_point(aes(y = richness_avg, color = "richness_avg")) + geom_line(aes(y = richness_avg, color = "richness_avg")) +
+  geom_point(aes(y = eff_simpson_avg, color = "eff_simpson_avg")) + geom_line(aes(y = eff_simpson_avg, color = "eff_simpson_avg")) +
+  geom_point(aes(y = eff_shannon_avg, color = "eff_shannon_avg")) + geom_line(aes(y = eff_shannon_avg, color = "eff_shannon_avg")) +
+  ggtitle("Reef Fish Biodiversity in the FKNMS") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Year", y = "Effective Number of Species", color = "Diversity index") +
+  scale_colour_manual(values = c("darkturquoise", "magenta", "blue"), labels=c("Shannon diversity", "Simpson diversity", "Richness")) +
+  scale_x_continuous(breaks = c(1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016))+
+  scale_y_continuous(breaks = c(0, 50, 100, 150, 200, 250, 300))
+ 
 ```
 
 ## Biodiversity metrics by subregion 
@@ -381,10 +422,10 @@ subregion_tbl = subregion_tbl %>%
 
 subregion_tbl = subregion_tbl %>%
   mutate(
-    sp_richness_sr = map(
+    richness_sr = map(
       sp_abun_sr, 
       function(x) specnumber(x %>% select(-c(1:6)))), #compute species richness by sr #removing columns datasetID, mapGridNumber, latitude, longitude, protection, n_stations 
-    richness_sr = map_dbl(
+    richness_sr_avg = map_dbl(
       sp_abun_sr, 
       function(x){
         x = apply(x %>% select(-c(1:6)), 2, mean)
@@ -401,17 +442,17 @@ subregion_tbl =  subregion_tbl %>%
       sp_abun_sr, 
       function(x) 1 / (1 - diversity(x %>% select(-c(1:6)), index='simpson'))),
     # effective simpson averaged across mapgrids
-    # eff_simpson_avg_mg = map_dbl(
+    # eff_simpson_sr_avg = map_dbl(
     #   effective_simpson_sr,
     #   ~ mean(.x, na.rm=T)),
     # effective simpson using avg species abundance across whole subregion-year
-    eff_simpson_avg_mg = map_dbl(
+    eff_simpson_sr_avg = map_dbl(
       sp_abun_sr, 
       function(x){
         x = apply(x %>% select(-c(1:6)), 2, mean)
         1 / (1 - diversity(x, index='simpson'))}))
 
-# TODO: Why/how are eff_simpson_avg_mg & eff_simpson_avg_mg different? Which to use?
+# TODO: Why/how are eff_simpson_sr_avg & eff_simpson_sr_avg different? Which to use?
 
 #TODO: check if individuals that were not detected to species level were removed before computing diversity indices 
   
@@ -422,10 +463,10 @@ subregion_tbl =  subregion_tbl %>%
 
 subregion_tbl =  subregion_tbl %>%
   mutate(
-    effective_shannon_sr = map(
+    eff_shannon_sr = map(
       sp_abun_sr, 
       function(x) exp(diversity(x %>% select(-c(1:6)), index='shannon'))),
-    eff_shannon_avg_mg = map_dbl(
+    eff_shannon_sr_avg = map_dbl(
       sp_abun_sr, 
       function(x){
         x = apply(x %>% select(-c(1:6)), 2, mean)
@@ -441,101 +482,100 @@ subregion_tbl =  subregion_tbl %>%
 #Plots of diversity by subregion 
 ```{r Subregion plots}
 
-ggplot(data = subregion_tbl, mapping = aes(x = year, y = eff_simpson_avg_mg, color = subregion, group = subregion)) + 
-  geom_point() + 
-  geom_line() +
-  facet_wrap(~ subregion, nrow = 1) +
-  ggtitle("Simpson Diversity in the FKNMS") +
-  labs(x = "Year", y = "Effective Number of Species", colour = "Subregions") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
-
-ggplot(data = subregion_tbl, aes(x = year, y = eff_simpson_avg_mg, subregion, group = subregion)) +
+#Simpson diversity by Subregion, with LM 
+ggplot(data = subregion_tbl, aes(x = year, y = eff_simpson_sr_avg, subregion, group = subregion)) +
   geom_smooth(fill = "darkturquoise", colour = "magenta", size = 1, method = "lm") +
   geom_point() +
   facet_grid(subregion ~ .) +
   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
-  ggtitle("Simpson Diversity") +
+  ggtitle("Simpson Diversity by Subregion") +
   labs(x = "Year", y = "Effective Number of Species", colour = "Subregions") +
   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 
 #plot using loess - what does loess do??
-# qplot(year, eff_simpson_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "loess") +
+# qplot(year, eff_simpson_sr_avg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "loess") +
 #   facet_grid(subregion ~ .) +
 #   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
 #   ggtitle("Simpson Diversity") +
 #   labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
 #   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 
-#plot using lm 
-qplot(year, eff_simpson_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "lm", formula = y ~ ns(x, 2), se = T) +
-  facet_grid(subregion ~ .) +
-  theme(strip.background = element_blank(), strip.text.y = element_blank()) +
-  ggtitle("Simpson Diversity") +
-  labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
+# #plot using lm 
+# qplot(year, eff_simpson_sr_avg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "lm", formula = y ~ ns(x, 2), se = T) +
+#   facet_grid(subregion ~ .) +
+#   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
+#   ggtitle("Simpson Diversity") +
+#   labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
+#   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
+# 
+# #plot using gam
+# qplot(year, eff_simpson_sr_avg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "gam") +
+#   facet_grid(subregion ~ .) +
+#   theme_update(plot.title = element_text(hjust = 0.5)) +
+#   ggtitle("Simpson Diversity") +
+#   labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
+#   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys")) +
+#   theme(strip.background = element_blank(), strip.text.y = element_blank()) + #removes facet grid title box
+#   ylim(5, 25) +
+#   xlim(1999, 2016)
 
-#plot using gam
-qplot(year, eff_simpson_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "gam") +
-  facet_grid(subregion ~ .) +
-  theme_update(plot.title = element_text(hjust = 0.5)) +
-  ggtitle("Simpson Diversity") +
-  labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys")) +
-  theme(strip.background = element_blank(), strip.text.y = element_blank()) + #removes facet grid title box 
-  ylim(5, 25) +
-  xlim(1999, 2016)
-
-#whole FKNMS Shannon 
- ggplot(data = subregion_tbl, mapping = aes(x = year, y = eff_shannon_avg_mg)) + 
-  geom_point(mapping = aes(color = subregion)) + 
-  geom_smooth() +
-  ggtitle("Shannon Diversity in the FKNMS") +
-  labs(x = "Year", y = "Effective Number of Species", colour = "Subregions") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
- 
-#lm plot 
-qplot(year, eff_shannon_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "lm") +
-  facet_grid(subregion ~ .) +
-  theme(strip.background = element_blank(), strip.text.y = element_blank()) +
-  ggtitle("Shannon Diversity") +
-  labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys")) 
-  #scale_x_continuous(breaks = c(2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016)) +
-  #theme(axis.text.x = element_text(angle = 45))
+# #whole FKNMS Shannon 
+#  ggplot(data = subregion_tbl, mapping = aes(x = year, y = eff_shannon_sr_avg)) + 
+#   geom_point(mapping = aes(color = subregion)) + 
+#   geom_smooth() +
+#   ggtitle("Shannon Diversity in the FKNMS") +
+#   labs(x = "Year", y = "Effective Number of Species", colour = "Subregions") +
+#   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
+#  
+# #lm plot 
+# qplot(year, eff_shannon_sr_avg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "lm") +
+#   facet_grid(subregion ~ .) +
+#   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
+#   ggtitle("Shannon Diversity") +
+#   labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
+#   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys")) 
+#   #scale_x_continuous(breaks = c(2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016)) +
+#   #theme(axis.text.x = element_text(angle = 45))
 
 #gam plot
-qplot(year, eff_shannon_avg_mg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "gam") +
-  facet_grid(subregion ~ .) +
-  theme(strip.background = element_blank(), strip.text.y = element_blank()) +
-  ggtitle("Shannon Diversity") +
-  labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
+# qplot(year, eff_shannon_sr_avg, data = subregion_tbl, color = subregion, geom = c("point", "smooth"), method = "gam") +
+#   facet_grid(subregion ~ .) +
+#   theme(strip.background = element_blank(), strip.text.y = element_blank()) +
+#   ggtitle("Shannon Diversity") +
+#   labs(x = "Year", y = "Effective Number of Species", colour = "Subregion") +
+#   scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
 
 #simpson and shannon 
 ggplot(data = subregion_tbl, aes(x = year)) +
-  geom_point(aes(y = eff_simpson_avg_mg, color = subregion), color = "darkturquoise") +
-  geom_point(aes(y = eff_shannon_avg_mg, color = subregion), color = "magenta") +
-  geom_line(aes(y = eff_simpson_avg_mg, color = subregion), color = "darkturquoise") +
-  geom_line(aes(y = eff_shannon_avg_mg, color = subregion), color = "magenta") +
+  geom_point(aes(y = eff_simpson_sr_avg, color = "eff_simpson_sr_avg" )) +
+  geom_point(aes(y = eff_shannon_sr_avg, color = "eff_shannon_sr_avg")) +
+  geom_line(aes(y = eff_simpson_sr_avg, color = "eff_simpson_sr_avg")) +
+  geom_line(aes(y = eff_shannon_sr_avg, color = "eff_shannon_sr_avg")) +
   facet_grid(subregion ~ .) + 
-  ggtitle("FKNMS Diversity by Subregion") +
-  labs(x = "Year", y = "Effective Number of Species", color = "Diversity") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys")) +
-  theme(legend.position = "bottom")
+  scale_colour_manual(values = c("darkturquoise", "magenta"), labels=c("Shannon diversity", "Simpson diversity")) +
+  ggtitle("Reef Fish Biodiversity by Subregion in the FKNMS") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Year", y = "Effective Number of Species", color = "Diversity index") +
+  scale_x_continuous(breaks = c(1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016)) 
+
 
 #richness, simpson, shannon by subregion
 ggplot(data = subregion_tbl, aes(x = year)) +
-  geom_point(aes(y = richness_sr, color = subregion), color = "green") +
-  geom_point(aes(y = eff_simpson_avg_mg, color = subregion), color = "darkturquoise") +
-  geom_point(aes(y = eff_shannon_avg_mg, color = subregion), color = "magenta") +
-  geom_line(aes(y = richness_sr, color = subregion), color = "green") +
-  geom_line(aes(y = eff_simpson_avg_mg, color = subregion), color = "darkturquoise") +
-  geom_line(aes(y = eff_shannon_avg_mg, color = subregion), color = "magenta") +
+  geom_point(aes(y = richness_sr_avg, color = "richness_sr_avg")) +
+  geom_point(aes(y = eff_shannon_sr_avg, color = "eff_shannon_sr_avg")) +
+  geom_point(aes(y = eff_simpson_sr_avg, color = "eff_simpson_sr_avg" )) +
+  geom_line(aes(y = richness_sr_avg, color = "richness_sr_avg")) +
+  geom_line(aes(y = eff_shannon_sr_avg, color = "eff_shannon_sr_avg")) +
+  geom_line(aes(y = eff_simpson_sr_avg, color = "eff_simpson_sr_avg")) +
   facet_grid(subregion ~ .) + 
-  ggtitle("FKNMS Diversity by Subregion") +
-  labs(x = "Year", y = "Effective Number of Species", color = "Diversity") +
-  scale_color_hue(labels = c("Dry Tortugas", "Lower Keys", "Middle Keys", "Upper Keys"))
+  scale_colour_manual(values = c("darkturquoise", "magenta", "blue"), labels=c("Shannon diversity", "Simpson diversity", "Richness")) +
+  ggtitle("Reef Fish Biodiversity by Subregion in the FKNMS") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  labs(x = "Year", y = "Effective Number of Species", color = "Diversity index") +
+  scale_x_continuous(breaks = c(1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016)) 
+
 ```
+
 
 ## Biodiversity metrics by level of protection
 - 'protection'; 0 = not protected, 1 = protected, 2 = not protected 
@@ -733,7 +773,7 @@ ggplot(data = mpa_tbl, aes(x = year)) +
 
 #Unnest tibble so the data is in long format with columns: year, datasetID, mapGridNumber, latitude, longitude, protection, subregion, richness, simpson, shannon 
 
-mg = subregion_tbl %>% unnest(sp_abun_sr, sp_richness_sr, effective_simpson_sr, effective_shannon_sr) #year, subregion, eff_simpson_avg_mg, eff_shannon_avg_mg, sp_richness_sr, effective_simpson_sr, effective_shannon_sr, datasetID, mapGridNumber, latitude, longitude, protection, n_stations, and all species
+mg = subregion_tbl %>% unnest(sp_abun_sr, sp_richness_sr, effective_simpson_sr, effective_shannon_sr) #year, subregion, eff_simpson_sr_avg, eff_shannon_sr_avg, sp_richness_sr, effective_simpson_sr, effective_shannon_sr, datasetID, mapGridNumber, latitude, longitude, protection, n_stations, and all species
 
 map_mg = mg %>%
   select(year, datasetID, mapGridNumber, latitude, longitude, protection, subregion, sp_richness_sr, effective_simpson_sr, effective_shannon_sr)
