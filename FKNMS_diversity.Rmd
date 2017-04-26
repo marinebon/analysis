@@ -10,43 +10,71 @@ knitr::opts_chunk$set(echo = TRUE)
 #rm(list = ls()) #clears workspace
 
 suppressPackageStartupMessages({
-  library(tidyverse)
-  library(lubridate)
-  library(raster)
-  library(sp)
-  library(leaflet)
-  library(scales)
-  library(vegan)
-  library(rerddap)
+  library(clue) # cluster ensembles 
   library(DT)
-  library(readxl)
-  library(stringr)
-  library(FD)
-  library(clue)
+  library(FD) # functional diversity 
   library(fpc) #Calls: pamk
-  library(psych)
-  library(raster)
-  library(SpadeR) # Sorenzen index (q=0), Horn Index (q=1), Morisita-Horn Index (q=2) 
+  library(leaflet)
+  library(lubridate)
+  library(mapplots) #data visualization on maps
+  library(maptools)# tools for reading and handling spatial objects
   library(mgcv) #function GAM 
-  library(RColorBrewer) 
+  library(raster) #tools to deal with raster maps 
+  library(rerddap) # call data from erddap 
+  library(readxl)
+  library(RColorBrewer) # pretty color palettes 
+  #library(rgeos) #interface to geometry engine - open source (GEOS) - wont install 
+  #library(rgdal) #bindings for the geospatial data abstraction library - wont install 
+  library(scales) #for transparency
+  library(sp) #classes and methods for spatial data
+  library(SpadeR) # Sorenzen index (q=0), Horn Index (q=1), Morisita-Horn Index (q=2) 
+  library(splines) # regression functions 
+  library(stringr)
+  library(tidyverse)
   library(tsne)
-  library(splines)
+  library(vegan) # biodiveristy functions for richness, simpson, and shannon 
+
 })
 
 select = dplyr::select
 ```
 
-## R Markdown
+## Reef Visual Census Background 
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Reef fish community data used in this study were collected as part of the multi-agency Reef Visual Census (RVC) (Brandt et al., 2009 [https://www.coris.noaa.gov/activities/fish_monitoring_protocol/]). Fish communities were visually surveyed underwater annually between April and September in the mainland FKNMS (Lower Keys, Middle Keys and Upper Keys) from 1999 to 2012, and biennially from 2012 to 2016. The Dry Tortugas region was surveyed from 1999 to 2000 and biennially from 2004 to 2016.   
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+The RVC uses a stationary point count method within a randomly selected 7.5 m radius circular plot with a 200m map grid to optimize the observation of conspicuous and diurnally active reef fish, specifically economically and ecologically important reef fish species (Bohnsack and Bannerot, 1986 [https://docs.lib.noaa.gov/noaa_documents/NMFS/TR_NMFS/TR_NMFS_41.pdf]).   
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Objective 
 
+The study sought to analyze and compare changes in species richness, Simpson diversity, Shannon diversity and functional diversity in the FKNMS. Indices were assessed to reveal changes in temporal and spatial variability from 1999 – 2016 throughout the Florida Keys, between four distinct regions of the FKNMS (Upper Keys, Middle Keys, Lower Keys, and Dry Tortugas) and for different levels of management (Ecological Reserves (ER), Sanctuary Preservations Areas (SPA), and Special Use/Research Only Areas (SU/RO)). 
+
+## Diversity indicse as effective number of species 
+
+All indices were computed as effective number of species. Effective number of species is the number of equally abundance species needed to produce the observed value of a diversity index (Jost, 2006; Jost et al., 2010; MacArthur, 1965). Jost, 2006 refers to these as true measures of diversity, where prior to the conversion the diversity indices are simply measures of entropy. 
+
+- Species Richness is the number of species in a habitat sampled,
+$$
+Richness = sum_{i=1}^S p_i^0        
+$$
+- Simpson diversity measures the probability that two individuals randomly selected from a sample will belong to different species. 
+$$
+Simpson = 1 - \sum_{i=1}^S p_i^2        
+$$
+- Shannon diveristy is a measure of entropy, it is the uncertainty in the species identity of a sample
+$$
+Shannon = - \sum_{i=1}^S p_i \log_b p_i  
+$$
+- Functional diversity (Rao's Q) is a measure of pairwise functional differences between species weighted by their relative abundances 
+$$
+Rao's Q = \sum_{i=1}^S-1 \sum_{j=i+1}^S d_i p_i p_j     
+$$
                                       
-## Outputs:                                                                           
-- Species richness, Effective Simpson diversity, Effective Shannon diversity, and Functional diversity (FD) by domain, subregion, level of protection and mapgrid in the Florida Keys National Marine Sanctuary
+## Outputs                                                                            
+- Species richness, Simpson diversity, Shannon diversity, and Functional diversity as effective number of species by domain
+- Species richness, Simpson diversity, Shannon diversity, and Functional diversity as effective number of species by subregion
+- Species richness, Simpson diversity, Shannon diversity, and Functional diversity as effective number of species by level of protection
+- Species richness, Simpson diversity, Shannon diversity, and Functional diversity as effective number of species by mapgrid 
 - Funcitonal dendogram 
 - environmental varibales from SERC 
 
@@ -566,7 +594,7 @@ ggplot(data = subregion_tbl, aes(x = year)) +
   geom_point(aes(y = eff_simpson_sr_avg, color = "eff_simpson_sr_avg" )) +
   geom_line(aes(y = richness_sr_avg, color = "richness_sr_avg")) +
   geom_line(aes(y = eff_shannon_sr_avg, color = "eff_shannon_sr_avg")) +
-  geom_line(aes(y = eff_simpson_sr_avg, color = "eff_simpson_sr_avg")) +
+  geom_line(aes(y = eff_simpson_sr_avg, color = "eff_simpson_sr_avg")) + 
   facet_grid(subregion ~ .) + 
   scale_colour_manual(values = c("darkturquoise", "magenta", "blue"), labels=c("Shannon diversity", "Simpson diversity", "Richness")) +
   ggtitle("Reef Fish Biodiversity by Subregion in the FKNMS") +
