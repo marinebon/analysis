@@ -10,17 +10,29 @@ knitr::opts_chunk$set(echo = TRUE)
 #rm(list = ls()) #clears workspace
 
 suppressPackageStartupMessages({
-  library(clue) # cluster ensembles 
+  library(ade4) #Calls: mantel.rtest, dudi.mix
+  library(ape) #Calls: read.tree, read.nexus, chronopl, as.phylo
+  library(automap) #Calls: autoKrige
+  #library(car) #Calls: recode
+  library(clue) # cluster ensembles, Calls: cl_consensus, cl_ultrametric
   library(DT)
-  library(FD) # functional diversity 
+  library(FD) # functional diversity: calls: gowdis 
   library(fpc) #Calls: pamk
+  #library(gridExtra) #Calls: grid.arrange
   library(leaflet)
   library(lubridate)
   library(mapplots) #data visualization on maps
   library(maptools)# tools for reading and handling spatial objects
   library(mgcv) #function GAM 
+  library(MuMIn) #Calls: dredge
+  library(parallel) #Calls: clusterEvalQ,clusterExport,detectCores,makeCluster,parLapply
+  library(picante) #Calls: phylosignal
+  library(plotrix) #Calls: std.error
+  library(plyr) #Calls: ddply
+  library(psych) #Calls: pairs.panels
   library(raster) #tools to deal with raster maps 
   library(rerddap) # call data from erddap 
+  #library(reshape2) #Calls: dcast, melt
   library(readxl)
   library(RColorBrewer) # pretty color palettes 
   #library(rgeos) #interface to geometry engine - open source (GEOS) - wont install 
@@ -29,8 +41,9 @@ suppressPackageStartupMessages({
   library(sp) #classes and methods for spatial data
   library(SpadeR) # Sorenzen index (q=0), Horn Index (q=1), Morisita-Horn Index (q=2) 
   library(splines) # regression functions 
-  library(stringr)
+  library(stringr) #Calls: str_split_fixed
   library(tidyverse)
+  library(tree) #Calls: tree
   library(tsne)
   library(vegan) # biodiveristy functions for richness, simpson, and shannon 
 
@@ -104,7 +117,7 @@ if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv)))){
       # Dry Tortugas
       sprintf('dt%d', c(1999,2000,2004,2006,2008,2010,2012,2014,2016)),
       # Florida Keys
-      sprintf('fk%d', 1999:2016)) # diff't method 1994:1998
+      sprintf('fk%d', c(1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2014, 2016))) # diff't method 1994:1998
     
     for (id in ids){ # id = ids[1]
     
@@ -154,7 +167,7 @@ if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv)))){
           write_csv(csv_id)
         
       } # end if (!file.exists(csv_id))
-    } # end for (yr in 1994:2014)
+    } # end for (yr in 1994:2016)
     
     # bind all csv's into one data frame
     cat("bind all csv's\n")
@@ -204,7 +217,18 @@ if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv)))){
 
 ## Summarize by mapgrid & species
 
-Next, we aggregate to having average density of species from Secondary Sampling Unit (SSU) and Primary Sampling Unit (PSU) to Map grid (200x200m).
+Next, we aggregate to having average density of species from Secondary Sampling Unit (SSU) and Primary Sampling Unit (PSU) to Map grid (200x200m).  
+
+Variables selected from ERDDAP
+- latitude (degrees_north)
+- longitude (degrees_east) 
+- depth (sea water depth, m)
+- scientificName 
+- quantificationValue (Mean number of observed fish per species per 5 Minutes, (num))
+- habitat_cd
+- bottomType
+- mapNumber (mpaNumber)
+- protection 
 
 ```{r aggregate}
 if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
@@ -214,7 +238,7 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
     
   # summarize individual species counts to PSU
   rvc_psu = rvc %>%
-    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, protection,    mapNumber,scientificName, quantificationValue) %>% #selecting data columns from rvc
+    select(datasetID, eventDate, mapGridNumber, primarySamplingUnit, station_nr, materialSampleID, protection, mapNumber, habitat_cd, bottomType, scientificName, quantificationValue) %>% #selecting data columns from rvc
     filter(!is.na(station_nr)) %>% #removing n/a
     group_by(datasetID, eventDate, mapGridNumber, primarySamplingUnit, scientificName) %>% #
     summarise(
@@ -242,7 +266,17 @@ if ( !all(file.exists(c(rvc_mg_csv, rvc_spp_csv))) ){
   # write to csv
   write_csv(rvc_mg, rvc_mg_csv)
   write_csv(rvc_spp, rvc_spp_csv)
-}
+}Show in New WindowClear OutputExpand/Collapse Output
+Parsed with column specification:
+cols(
+  year = col_double(),
+  datasetID = col_character(),
+  mapGridNumber = col_double(),
+  protection = col_integer(),
+  scientificName = col_character(),
+  q_mean = col_double(),
+  n_stations = col_integer()
+)
 
 # read in data
 rvc_mg = read_csv(rvc_mg_csv)
