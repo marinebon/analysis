@@ -98,7 +98,9 @@ rvc_mg_csv  = 'data/rvc_mapgrid_locations.csv'
 rvc_spp_csv = 'data/rvc_species_densities.csv'
 
 # assign ERDDAP server URL
-eurl = 'http://gcoos4.tamu.edu:8080/erddap/' # search/index.html?page=1&itemsPerPage=1000&searchFor=Florida+Keys+Reef+Fish+Visual+Census
+eurl = 'http://gcoos4.tamu.edu:8080/erddap/search/'
+#http://gcoos4.tamu.edu:8080/erddap/search/index.html?page=1&itemsPerPage=1000
+#http://gcoos4.tamu.edu:8080/erddap/search/index.html?page=1&itemsPerPage=1000&searchFor=reef+visual+census
 
 # only load full rvc.rds if need be (since slow)
 if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv)))){
