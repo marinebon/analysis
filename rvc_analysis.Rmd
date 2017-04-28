@@ -35,12 +35,7 @@ suppressPackageStartupMessages({
   #library(dygraphs)
   #library(xts)
   #library(mgcv) #function GAM 
-<<<<<<< HEAD
-
-
-=======
   #library(rareNMtesets) #sample-based rarefaction curve 
->>>>>>> d27bc9d4edeb066bddcbd049f8da270ef4c6f6bd
 })
 
 select = dplyr::select
@@ -88,7 +83,7 @@ if (!all(file.exists(c(rvc_mg_csv, rvc_spp_csv)))){
       # Dry Tortugas
       sprintf('dt%d', c(1999,2000,2004,2006,2008,2010,2012,2014,2016)),
       # Florida Keys
-      sprintf('fk%d', 1999:2014)) # diff't method 1994:1998
+      sprintf('fk%d', c(1999:2014,2016))) # diff't method 1994:1998
     
     for (id in ids){ # id = ids[1]
     
@@ -345,13 +340,8 @@ hist(rvc_tbl$richness[[1]])
   $$
   S = cX^z
   $$
-<<<<<<< HEAD
 Where X is the area (size) of the patch or site, S is the number of species, and c and z are parameters. Parameter c is uninteresting,but z gives the steepness of the species area curve and is a measure of beta diversity.
-=======
-Where X is the area (size) of the patch or site, and c and z are parameters. Parameter c is uninteresting,
-but z gives the steepness of the species area curve and is a measure of beta diversity.
 
->>>>>>> d27bc9d4edeb066bddcbd049f8da270ef4c6f6bd
 ```{r  Arrhenius species–area model}
 data(BCI) # 50 sites x 225 species
 z <- betadiver(BCI, "z")
